@@ -20,7 +20,7 @@ class GsmModem {
   void CheckNetwork();
   int32_t ListSMS();
   int32_t ListSMS(char* smstext, int32_t maxlength);
-  int32_t SendSMS(const char* number, const char* smstext, int32_t textlen);
+  int32_t SendSMS(const char* smstext, int32_t textlen = -1);
   /* --------------------------------------------------------------------------- */
   int32_t Connect(const char* ip, const char* port, const char* apn = 0,
                   const char* usrname = 0, const char* usrpsw = 0);
@@ -40,11 +40,8 @@ class GsmModem {
   static const uint32_t session_init_time = 20; // 20 sec for first waiting session start
   static const int32_t session_silent_time = 60;
 
-  // static const int32_t err_str_len;
-  // static const char* err_string[];
-
   static const int32_t maxlenght_pCG = 32;
-  static const int32_t workbuf_lenght = 256;
+  static const int32_t kWorkBuffLength = 384;
 
  private:
   // ModemOperateState opstate;
@@ -58,7 +55,7 @@ class GsmModem {
   int32_t csqquality;
   uint32_t smsid;
 
-  char workbuff[workbuf_lenght];
+  char workbuff[kWorkBuffLength];
   bool wrong_in_response;
 
  private:
