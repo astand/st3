@@ -165,6 +165,7 @@ int32_t GsmModem::ListSMS(char* smstext, int32_t maxlength)
 
     /// Trow all messages until "OK"
     AtResponse("OK", 0, 5000);
+    DeleteSMS(smsid);
   }
 
   return ret;
@@ -315,6 +316,13 @@ void GsmModem::Close_QI()
     mdmstate_ = kNoecho;
 }
 
+
+void GsmModem::DeleteSMS(int32_t smsid)
+{
+  sprintf(workbuff, "AT+CMGD=%d\r\n", smsid);
+  Send(workbuff, 50);
+  AtResponse("OK");
+}
 
 
 void GsmModem::CheckConnStatus(const char* ack, int32_t len)

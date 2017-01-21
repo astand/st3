@@ -76,6 +76,8 @@ class GsmModem {
   void Suspend_QI();
   void Resume_QI();
 
+  void DeleteSMS(int32_t id);
+
  private:
   void CheckConnStatus(const char* ack, int32_t len);
 
