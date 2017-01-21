@@ -630,10 +630,12 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_Idle):
       {
-//        if (!sessTim.Elapsed() && m66.State == kRegOk)
-//        {
-//          g_GsmMainState = eG_TryConnect;
-//        }
+        if (!sessTim.Elapsed() && m66.State == kRegOk)
+        {
+          g_GsmMainState = eG_TryConnect;
+          break;
+        }
+
         if (igsmTim.Elapsed())
         {
           igsmTim.Start(9000);
@@ -692,12 +694,13 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_TryConnect):
       {
-//        if (currgprs->TcpValid() == false)
-//        {
-//          g_GsmMainState = eG_Idle;
-//          break;
-//        }
-        m66.Connect("178.140.8.184", "20201");
+        if (currgprs->TcpValid() == false)
+        {
+          g_GsmMainState = eG_Idle;
+          break;
+        }
+
+        m66.Connect(ssrv[0], ssrv[1]);
 
         if (m66.State == kConnected)
         {
