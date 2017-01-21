@@ -46,5 +46,5 @@ untracked/*
 *._ia
 
 .#*
-*.uvgui.*
-*.uvopt
+*.uvgui*
+*.uvopt*

@@ -94,27 +94,6 @@ ISectorWriter* firmsaver = FlashFactory::GetSectorWriter();
 
 GsmModem& m66 = GetGsmModem();
 
-/* ------------------------------------------------------------------------- */
-typedef struct
-{
-  uint8_t y;
-  uint8_t m;
-  uint8_t d;
-  uint8_t hh;
-  uint8_t mm;
-  uint8_t ss;
-  uint8_t valid;
-} DATETIMEFORMAT;
-DATETIMEFORMAT dateTime;
-
-
-
-/* ------------------------------------------------------------------------- */
-const uint8_t daytab [2][13] =
-{
-  {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
-  {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
-};
 
 const int32_t kRxMaxLen = 1024;
 
@@ -143,12 +122,6 @@ static volatile enum
   eG_Wait
 }
 g_GsmMainState;
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-uint8_t Inc_Phone_In[MAX_PHONE_LEN + 1];
 
 typedef struct
 {
@@ -202,32 +175,12 @@ static uint32_t led_templates[eLedSize] =
   0
 };
 /* ------------------------------------------------------------------------- */
-//62.141.87.178,20011
-//178.140.6.233,20201
-const char* gpr_debug_str = "GPRS 000,,,,,,178.140.204.50,20201,,,240,2,3,24";
-//const char * gpr_debug_str = "GPRS 000,,,,,,62.141.87.178,20012,,,240,2,3,24";
 
 #define INFO_STRING_MASK "IMEI=%s,VERSION=%d.%d.%d,NAME=%s"
 
 char testinfostring[64];
 static char imei_str[32] = "111110002220000";
 
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
-
-
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
-void GSM_Switch_Off(void)
-{
-  return;
-}
-
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
 void GsmSwitchOn(void)
 {
   en4v.off();
@@ -240,32 +193,6 @@ void GsmSwitchOn(void)
   return;
 }
 
-
-
-
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
-uint8_t m66_CheckFailAnswer(char* buf, int32_t len)
-{
-  if (memcmp(buf, "NO DIALTONE", len) == 0 ||
-      memcmp(buf, "ERROR", len) == 0 ||
-      memcmp(buf, "NO CARRIER", len) == 0 ||
-      memcmp(buf, "+CMS ERROR", 10) == 0)
-    return (1);
-
-  return (0);
-}
-
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
-//uint8_t m66B
-
-/* ------------------------------------------------------------------------- *
- * led indicate task
- * call from special <tskledBlinkThread> 100 ms task in main.c
- * ------------------------------------------------------------------------- */
 uint32_t LedBlinkGsm(void)
 {
   uint32_t mmask;
@@ -273,119 +200,6 @@ uint32_t LedBlinkGsm(void)
   mmask = ((led_templates[eLedState]) & 1) ? (1) : (0);
   return mmask;
 }
-/* ------------------------------------------------------------------------ *
- * function for getting day index of year
- * ------------------------------------------------------------------------ */
-uint32_t getYearDayIndx (const DATETIMEFORMAT dayIndxDate)
-{
-//   uint8_t leapyear;
-  uint8_t indx;
-  uint32_t res = 0;
-
-  for (indx = 1; indx < dayIndxDate.m; res += daytab[1][indx++]);
-
-  return res += dayIndxDate.d;
-}
-
-
-/* ------------------------------------------------------------------------- *
- *  function for getting day of week
- * ------------------------------------------------------------------------- */
-uint32_t getDayOfWeek(const DATETIMEFORMAT lcl_DateTime)
-{
-  int32_t a = (14 - (lcl_DateTime.m)) / 12;
-  int32_t y = (lcl_DateTime.y) - a;
-  int32_t m = ((lcl_DateTime.m) + 12 * a - 2);
-  return ((7000 - 1 +
-           (lcl_DateTime.d + y + (y / 4) - (y / 100) + (y / 400) + (31 * m) / 12)) % 7);
-}
-
-/* ------------------------------------------------------------------------- *
- * Func for convert dateTime to -12 hours
- * for getting day (12:00) date tick
- * ------------------------------------------------------------------------- */
-
-DATETIMEFORMAT MagicDateTimeConverter(DATETIMEFORMAT lDatTim)
-{
-  uint8_t leapyear;
-
-  if (lDatTim.hh < 12)
-  {
-    /* prev day */
-    if (lDatTim.d == 1)
-    {
-      if (lDatTim.m == 1)
-      {
-        /* roll back  month and year*/
-        lDatTim.m = 13;
-        lDatTim.y--;
-      }
-
-      leapyear = ((lDatTim.y + 2000) % 4 == 0 &&
-                  (lDatTim.y + 2000) % 100 != 0 ||
-                  (lDatTim.y + 2000) % 400 == 0);
-      lDatTim.m--;
-      lDatTim.d = daytab[leapyear][lDatTim.m];
-    }
-    else
-      (lDatTim.d)--;
-  }
-
-  return lDatTim;
-}
-
-/* ------------------------------------------------------------------------- *
- * get actual time for another EVENT
- * format this param - (h*60 + m)
- * ------------------------------------------------------------------------- */
-uint32_t GetActualTime (uint8_t* shedBuff, uint32_t onT, uint32_t offT)
-{
-  int32_t   offsetTable;
-  uint32_t  resTime;
-
-  if ((shedBuff[2] & 0xF0) == 0xF0)
-  {
-    /* time from table */
-    if ((offsetTable = (int8_t)(shedBuff[3])) < 0)
-      /* negative offset */
-      offsetTable = (1440 + offsetTable);
-
-    if (shedBuff[2] & 1)
-    {
-      /* ontable */
-      resTime = ((onT + offsetTable) % 1440);
-    }
-    else
-    {
-      /*off table */
-      resTime = ((offT + offsetTable) % 1440);
-    }
-  }
-  else
-  {
-    /* actual time from shed event */
-    resTime = (shedBuff[2] * 60) + (shedBuff[3]);
-  }
-
-  return resTime;
-}
-
-/* ------------------------------------------------------------------------- *
- * function for getting actual state of light system mode
- * call in <GsmThreadTickTask> every one minute
- * ------------------------------------------------------------------------- */
-//void GsmThreadTickTask(void)
-//{
-//	if (dateTimeTick() > 0)
-//	{
-//		/* minute change */
-//		DBG_Common("[clock]<%d><%d><%d>-<%d><%d><%d>\n",
-//		           dateTime.hh, dateTime.mm, dateTime.ss,
-//		           dateTime.d, dateTime.m, dateTime.y);
-////		SheduleLightModeState(dateTime);
-//	}
-//}
-
 
 
 /* ------------------------------------------------------------------------- *
@@ -690,16 +504,8 @@ int32_t JConfSocketUpdate()
   sessTim.Start(1000 * 10 * 1);
   return 0;
 }
-/* ------------------------------------------------------------------------- */
-// void osDelayWrapper(uint16_t tim)
-// {
-//   osDelay(tim);
-// }
 
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
-uint8_t MainSmsParsing(char* inSms)
+uint8_t MainSmsParsing(char* inSms, int32_t sms_len)
 {
   uint32_t preamb;
   DBG_Gsm("%s\n", inSms);
@@ -742,9 +548,9 @@ uint8_t MainSmsParsing(char* inSms)
       break;
   } // swirch;
 
-//  if (is_answer)
-//    GSM_Send_SMS(Inc_Phone_In, prdat.len, GSM_SMS_FORMAT_7BIT);
-  DBG_Gsm("%s\n", GSM_TX_Buff);
+  if (is_answer)
+    m66.SendSMS((const char*)GSM_TX_Buff, prdat.len);
+
   return 0;
 }
 
@@ -763,11 +569,10 @@ void m66DCDHandle()
 void IncomeSmsHandle()
 {
   int32_t sms_length = 0;
-//  int32_t sms_message_length = 0;
   sms_length = m66.ListSMS(cTempBuff, kTempBuffLen);
-//  sms_message_length = FromPduToAscii((char*)GSM_RX_Buff, cTempBuf, sms_length);
-//  if (sms_message_length > 1)
-//    MainSmsParsing((char*)GSM_RX_Buff, sms_message_length);
+
+  if (sms_length > 1)
+    MainSmsParsing(cTempBuff, sms_length);
 }
 
 /* ------------------------------------------------------------------------- *
@@ -777,7 +582,6 @@ void IncomeSmsHandle()
  * ------------------------------------------------------------------------- */
 void tskGsm(void*)
 {
-  memset((void*) & (dateTime), 0, sizeof(dateTime));
   osDelay(500);
   DBG_Gsm("*<* Gsm task start complete *>*\n\n");
   g_GsmMainState = eG_Start;
@@ -805,26 +609,6 @@ void tskGsm(void*)
         /* start modem init */
         GsmSwitchOn();
         m66.SyncPipe();
-//        if (m66.atState == kError || kAlter)
-//        {
-//
-//        }
-//
-//
-//        if (!(m66Syncro(15, 400)))
-//        {
-//          g_GsmMainState = eG_Start;
-//          break;
-//        }
-//        m66EchoOff();
-//        m66FixIpr();
-//        m66CommonConf();
-//        eLedState = eLedNoSim;
-        // if (!m66SimCheck(3600 * 1000))
-        // {
-        //   g_GsmMainState = eG_Start;
-        //   break;
-        // }
         /* all OK state to   */
         g_GsmMainState = eG_Init;
         JConfSocketUpdate();
@@ -834,7 +618,6 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_Init):
       {
-//				LoadSecTim(gsm_restart_to, NET_RESTART_TO);
         igsmTim.Start(1000);
         eLedState = eLedNoReg;
         time_register_wait = (time_register_wait < 360) ?
@@ -850,12 +633,9 @@ void tskGsm(void*)
         if (!sessTim.Elapsed() && m66.State == kRegOk)
         {
           g_GsmMainState = eG_TryConnect;
+          break;
         }
 
-        // if (!igsmTim.Elapsed())
-        //   break;
-
-        /* ----------------- BIG block SMS and Net state ------------------- */
         if (igsmTim.Elapsed())
         {
           igsmTim.Start(9000);
@@ -869,16 +649,13 @@ void tskGsm(void*)
           }
 
           eLedState = eLedNoReg;
+          IncomeSmsHandle();
 
           if (m66.State == kRegOk)
           {
             eLedState = eLedReg;
             gregTim.Start(1000 * NET_REG_SEC_TIMEOUT);
-//            if (GsmReceiveSMS(Inc_Phone_In) > 1)
-//              MainSmsParsing((char*)GSM_RX_Buff);
           }
-
-          /* end check net state block check incoming SMS */
 
           if (true)
           {
@@ -904,14 +681,6 @@ void tskGsm(void*)
           }
         }
 
-//				/* ------------- BIG block SMS and Net state END --------------------- */
-//				if ((!GetTim(gsm_register_to)) || GetTim(gsm_restart_to) == 0)
-//				{
-//					DBG_Gsm("RegSecTimer: %d | NetRestertSecTimer: %d\n",
-//					        GetTim(gsm_register_to), GetTim(gsm_restart_to));
-//					g_GsmMainState = eG_Start;
-//				}
-
         /* ------------- BIG block SMS and Net state END --------------------- */
         if (gregTim.Elapsed())
         {
@@ -925,13 +694,13 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_TryConnect):
       {
-//        if (currgprs->TcpValid() == false)
-//        {
-//          g_GsmMainState = eG_Idle;
-//          break;
-//        }
+        if (currgprs->TcpValid() == false)
+        {
+          g_GsmMainState = eG_Idle;
+          break;
+        }
 
-        m66.Connect("178.140.8.184", "20201");
+        m66.Connect(ssrv[0], ssrv[1]);
 
         if (m66.State == kConnected)
         {
@@ -1020,19 +789,4 @@ void Start_GsmThread()
 {
   xTaskCreate(tskGsm, "tskGsm", kLowStackSz, (void*)NULL, kPrio_IDLE, NULL);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -10,58 +10,17 @@
 namespace M66
 {
 
-
-/// @CMD_DELAY - collection of timings for waiting before sending CMD to modem
-/// unit - <ms>
-// #define CMD_DELAY20       ((uint32_t) 20)
-// #define CMD_DELAY50       ((uint32_t) 50)
-
-#define CMD_DELAY_SIM     ((uint32_t) 500)
-
-/// @WAIT - collection of timings for waiting different answers
-/// from modem. unit - <ms>
-// #define WAIT_ANSWER15     ((uint32_t)150)
-// #define WAIT_ANSWER30     ((uint32_t)300)
-
-#define WAIT_CLOCK        ((uint32_t)500)
-#define WAIT_ECHO         ((uint32_t)200)
-
-#define WAIT_SMS_LIST     ((uint32_t)700)
-#define WAIT_SMS_DEL      ((uint32_t)3000)
-
-#define WAIT_CG_ATT       ((uint32_t) 10000)
-#define WAIT_CG_CONN      ((uint32_t) 10000)
-#define WAIT_CG_DISCONN   ((uint32_t) 5000)
-
-#define WAIT_PRESUSPEND   ((uint32_t) 1000)
-#define WAIT_POSTSUSPEND  ((uint32_t) 1500)
-
-#define WAIT_RESTORE      ((uint32_t) 1500)
-
-
-#define WAIT_CG_CLOSE     ((uint32_t) 5000)
-
-
 class GsmModem {
-  // typedef uint16_t oswait_t;
  public:
   const ModemState& State;
-  // const GprsState& InetState;
 
  public:
-  // const AtPipe::strbuf_t* AtData();
-  /// @GsmModem - take stream and pointer to task context switch
-  // GsmModem(IStreamable& str, ISwitchable& powerpin, void (*waiter)());
   GsmModem(AtPipe& pipe);
-
-
-  /// @TickCounters - must be call every 1 ms, for handle inner timings
-//  void TickCounters();
-
   bool SyncPipe();
   void CheckNetwork();
   int32_t ListSMS();
   int32_t ListSMS(char* smstext, int32_t maxlength);
+  int32_t SendSMS(const char* smstext, int32_t textlen = -1);
   /* --------------------------------------------------------------------------- */
   int32_t Connect(const char* ip, const char* port, const char* apn = 0,
                   const char* usrname = 0, const char* usrpsw = 0);
@@ -81,11 +40,8 @@ class GsmModem {
   static const uint32_t session_init_time = 20; // 20 sec for first waiting session start
   static const int32_t session_silent_time = 60;
 
-  // static const int32_t err_str_len;
-  // static const char* err_string[];
-
   static const int32_t maxlenght_pCG = 32;
-  static const int32_t workbuf_lenght = 256;
+  static const int32_t kWorkBuffLength = 384;
 
  private:
   // ModemOperateState opstate;
@@ -99,7 +55,7 @@ class GsmModem {
   int32_t csqquality;
   uint32_t smsid;
 
-  char workbuff[workbuf_lenght];
+  char workbuff[kWorkBuffLength];
   bool wrong_in_response;
 
  private:
@@ -119,6 +75,8 @@ class GsmModem {
 
   void Suspend_QI();
   void Resume_QI();
+
+  void DeleteSMS(int32_t id);
 
  private:
   void CheckConnStatus(const char* ack, int32_t len);

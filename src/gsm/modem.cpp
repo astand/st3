@@ -32,8 +32,16 @@ static const char* DropLF(const char* in)
     cpy_cnt = kDebugLen - 1;
   }
 
-  memcpy(cmd_debug, in, cpy_cnt - 1);
-  cmd_debug[cpy_cnt - 1] = '\0';
+  if (cpy_cnt != 0)
+  {
+    memcpy(cmd_debug, in, cpy_cnt - 1);
+    cmd_debug[cpy_cnt - 1] = '\0';
+  }
+  else
+  {
+    cmd_debug[0] = '\0';
+  }
+
   return cmd_debug;
 }
 
@@ -138,7 +146,7 @@ void GsmModem::CheckNetwork()
 ///@return - 0 if a sms is not available, 1 - if the sms is ready
 int32_t GsmModem::ListSMS()
 {
-  Send("AT+CMGL=4\r\n");
+  Send("AT+CMGL=4\r\n", 50);
   AtResponse("+CMGL: ", AT_OK);
   return (pipeState == kOk) ? 1 : 0;
 }
@@ -155,21 +163,41 @@ int32_t GsmModem::ListSMS(char* smstext, int32_t maxlength)
     /// parse PDU length
     pdulen = str0::Atoi(str0::ToSym(answ_, 3));
     // sms pdu PAYLOAD receving
-    ret = AtResponse(0, 0, 200);
+    ret = AtResponse(0, 0, 1000);
 
     if (ret > 0)
     {
-      pdulen = (pdulen > maxlength) ? (maxlength) : (ret);
+      pdulen = (pdulen > maxlength) ? (maxlength) : (pdulen);
       ret = FromPduToAscii(smstext, answ_, pdulen);
     }
 
-    ///  wait until another sms's passed through channel
-    /// TODO : May be it shouldn't perform
-    AtResponse("ABRACADABRA", 0, 800);
+    /// Trow all messages until "OK"
+    AtResponse("OK", 0, 5000);
+    DeleteSMS(smsid);
   }
 
   return ret;
 }
+
+int32_t GsmModem::SendSMS(const char* smstext, int32_t smslen)
+{
+  int32_t send_ret = 0;
+  int32_t text_len = smslen;
+
+  if (smslen < 0)
+  {
+    text_len = strlen(smstext);
+  }
+
+  int32_t pdu_len = FromAsciiToPdu(workbuff + 16, smstext, text_len, 0);
+  sprintf(workbuff, "AT+CMGS=%d\r", pdu_len);
+  Send(workbuff);
+  AtResponse();
+  Send(workbuff + 16, 20);
+  send_ret = AtResponse("+CMGS: ");
+  return send_ret;
+}
+
 
 /* --------------------------------------------------------------------------- */
 int32_t GsmModem::Connect(const char* ip, const char* port, const char* apn,
@@ -296,6 +324,13 @@ void GsmModem::Close_QI()
     mdmstate_ = kNoecho;
 }
 
+
+void GsmModem::DeleteSMS(int32_t smsid)
+{
+  sprintf(workbuff, "AT+CMGD=%d\r\n", smsid);
+  Send(workbuff, 50);
+  AtResponse("OK");
+}
 
 
 void GsmModem::CheckConnStatus(const char* ack, int32_t len)
