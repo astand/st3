@@ -123,8 +123,6 @@ static volatile enum
 }
 g_GsmMainState;
 
-uint8_t Inc_Phone_In[MAX_PHONE_LEN + 1];
-
 typedef struct
 {
   uint32_t offset;
@@ -507,7 +505,7 @@ int32_t JConfSocketUpdate()
   return 0;
 }
 
-uint8_t MainSmsParsing(char* inSms)
+uint8_t MainSmsParsing(char* inSms, int32_t sms_len)
 {
   uint32_t preamb;
   DBG_Gsm("%s\n", inSms);
@@ -550,9 +548,9 @@ uint8_t MainSmsParsing(char* inSms)
       break;
   } // swirch;
 
-//  if (is_answer)
-//    GSM_Send_SMS(Inc_Phone_In, prdat.len, GSM_SMS_FORMAT_7BIT);
-  DBG_Gsm("%s\n", GSM_TX_Buff);
+  if (is_answer)
+    m66.SendSMS((const char*)GSM_TX_Buff, prdat.len);
+
   return 0;
 }
 
@@ -571,11 +569,10 @@ void m66DCDHandle()
 void IncomeSmsHandle()
 {
   int32_t sms_length = 0;
-//  int32_t sms_message_length = 0;
   sms_length = m66.ListSMS(cTempBuff, kTempBuffLen);
-//  sms_message_length = FromPduToAscii((char*)GSM_RX_Buff, cTempBuf, sms_length);
-//  if (sms_message_length > 1)
-//    MainSmsParsing((char*)GSM_RX_Buff, sms_message_length);
+
+  if (sms_length > 1)
+    MainSmsParsing(cTempBuff, sms_length);
 }
 
 /* ------------------------------------------------------------------------- *
@@ -633,12 +630,10 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_Idle):
       {
-        if (!sessTim.Elapsed() && m66.State == kRegOk)
-        {
-          g_GsmMainState = eG_TryConnect;
-        }
-
-        /* ----------------- BIG block SMS and Net state ------------------- */
+//        if (!sessTim.Elapsed() && m66.State == kRegOk)
+//        {
+//          g_GsmMainState = eG_TryConnect;
+//        }
         if (igsmTim.Elapsed())
         {
           igsmTim.Start(9000);
@@ -652,16 +647,13 @@ void tskGsm(void*)
           }
 
           eLedState = eLedNoReg;
+          IncomeSmsHandle();
 
           if (m66.State == kRegOk)
           {
             eLedState = eLedReg;
             gregTim.Start(1000 * NET_REG_SEC_TIMEOUT);
-//            if (GsmReceiveSMS(Inc_Phone_In) > 1)
-//              MainSmsParsing((char*)GSM_RX_Buff);
           }
-
-          /* end check net state block check incoming SMS */
 
           if (true)
           {
