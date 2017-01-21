@@ -32,8 +32,16 @@ static const char* DropLF(const char* in)
     cpy_cnt = kDebugLen - 1;
   }
 
+  if (cpy_cnt != 0)
+  {
     memcpy(cmd_debug, in, cpy_cnt - 1);
     cmd_debug[cpy_cnt - 1] = '\0';
+  }
+  else
+  {
+    cmd_debug[0] = '\0';
+  }
+
   return cmd_debug;
 }
 
