@@ -65,7 +65,7 @@ static void PrintDebug(const ResponseState& st, const char* answer, int32_t leng
   }
   else if (st == kUnknown)
   {
-    DBG_Modem("[mdm] ! warning. UNKNOWN received: %s\n", answer);
+    DBG_Modem("[mdm] ! warning. Len:%d UNKNOWN: %s\n", length, answer);
   }
 
   DBG_Modem("\n\n");
@@ -208,10 +208,6 @@ int32_t GsmModem::Connect(const char* ip, const char* port, const char* apn,
   Scan_QI();
   Configure_QI(apn, usrname, usrpsw);
   Connect_QI(ip, port);
-
-  if (pipeState == kOk)
-    mdmstate_ = kConnected;
-
   return 0;
 }
 
@@ -311,7 +307,16 @@ void GsmModem::Connect_QI(const char* ip, const char* port)
   sprintf(workbuff, "AT+QIOPEN=\"TCP\",\"%s\",\"%s\"\r\n", ip, port);
   // Start up TCP or UDP Connection
   Send(workbuff);
-  AtResponse("OK", "CONNECT FAIL");
+  /// First of all will return "OK" that means that cmd format correct
+  /// After it, if connection OK, must be returned "CONNECT OK", but
+  /// acctually returns "CONNECT" (!)
+  /// It must be checked by length for correct connect detection
+  int32_t conn_len = AtResponse("CONNECT", 0, 10000);
+
+  if (conn_len == 7 && pipeState == kOk)
+  {
+    mdmstate_ = kConnected;
+  }
 }
 
 

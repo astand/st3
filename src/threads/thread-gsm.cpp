@@ -142,40 +142,6 @@ struct
   bool accept;
 } firm_inst = {false, false, false};
 
-/* ------------------------------------------------------------------------- */
-enum
-{
-  /* red */
-  eLedIdle = 0,
-  eLedNoSim = 1,
-  eledNoEcho = 2,
-  /* grn */
-  eLedReg = 3,
-  eLedNoReg = 4,
-  eLedConn = 5,
-  eledOff = 6,
-
-  eLedSize
-} eLedState = eledOff;
-/* ------------------------------------------------------------------------- */
-static uint32_t led_templates[eLedSize] =
-{
-  0xFFFFFFFF,
-  /* no sim   : -----------+-+ */
-  0x00000088,
-  /* no echo  : ------++-++-++*/
-  0x00000888,
-  /* reg      : ---------+++++ */
-  0x00000FFF,
-  /* no reg   : -------------+ */
-  0x00000001,
-  /* connect  : -+-+-+-+-+-+-+ */
-  0xCCCCCCCC,
-  /* off */
-  0
-};
-/* ------------------------------------------------------------------------- */
-
 #define INFO_STRING_MASK "IMEI=%s,VERSION=%d.%d.%d,NAME=%s"
 
 char testinfostring[64];
@@ -192,15 +158,6 @@ void GsmSwitchOn(void)
   osDelay(9000);
   return;
 }
-
-uint32_t LedBlinkGsm(void)
-{
-  uint32_t mmask;
-  led_templates[eLedState] = __ror(led_templates[eLedState], 1);
-  mmask = ((led_templates[eLedState]) & 1) ? (1) : (0);
-  return mmask;
-}
-
 
 /* ------------------------------------------------------------------------- *
 
@@ -575,6 +532,23 @@ void IncomeSmsHandle()
     MainSmsParsing(cTempBuff, sms_length);
 }
 
+
+bool IsReadyForConnect()
+{
+  bool ret = false;
+
+  if (sessTim.Elapsed())
+  {
+    sessTim.Start(1000 * 40);
+
+    if (m66.State == kRegOk && currgprs->TcpValid())
+    {
+      ret = true;
+    }
+  }
+
+  return ret;
+}
 /* ------------------------------------------------------------------------- *
  * ------------------------------------------------------------------------- *
  *                            TASK GSM START
@@ -605,7 +579,6 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_Start):
       {
-        eLedState = eLedIdle;
         /* start modem init */
         GsmSwitchOn();
         m66.SyncPipe();
@@ -619,7 +592,6 @@ void tskGsm(void*)
       case (eG_Init):
       {
         igsmTim.Start(1000);
-        eLedState = eLedNoReg;
         time_register_wait = (time_register_wait < 360) ?
                              (time_register_wait + (NET_REG_SEC_TIMEOUT * 2)) : (360);
         gregTim.Start(1000 * time_register_wait);
@@ -630,7 +602,7 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_Idle):
       {
-        if (!sessTim.Elapsed() && m66.State == kRegOk)
+        if (IsReadyForConnect())
         {
           g_GsmMainState = eG_TryConnect;
           break;
@@ -643,17 +615,14 @@ void tskGsm(void*)
 
           if (m66.State == kNoecho)
           {
-            eLedState = eledNoEcho;
             g_GsmMainState = eG_Start;
             break;
           }
 
-          eLedState = eLedNoReg;
           IncomeSmsHandle();
 
           if (m66.State == kRegOk)
           {
-            eLedState = eLedReg;
             gregTim.Start(1000 * NET_REG_SEC_TIMEOUT);
           }
 
@@ -694,12 +663,6 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_TryConnect):
       {
-        if (currgprs->TcpValid() == false)
-        {
-          g_GsmMainState = eG_Idle;
-          break;
-        }
-
         m66.Connect(ssrv[0], ssrv[1]);
 
         if (m66.State == kConnected)
@@ -788,5 +751,11 @@ void tskGsm(void*)
 void Start_GsmThread()
 {
   xTaskCreate(tskGsm, "tskGsm", kLowStackSz, (void*)NULL, kPrio_IDLE, NULL);
+}
+
+
+uint8_t GetIntegerModemState()
+{
+  return static_cast<uint8_t>(m66.State);
 }
 
