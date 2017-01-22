@@ -98,6 +98,7 @@ bool GsmModem::SyncPipe()
   if (pipeState != kOk)
     return false;
 
+  mdmstate_ = kNoSim;
   Send("ATE0\r\n", 20, false);
   AtResponse(AT_OK);
   Send("AT+IPR?\r\n", 20, false);
@@ -131,6 +132,7 @@ bool GsmModem::SyncPipe()
   AtResponse(AT_OK);
   Send("AT+QITCFG=3,2,768,1\r\n");
   AtResponse(AT_OK);
+  mdmstate_ = kNoReg;
   return (wrong_in_response);
 }
 
