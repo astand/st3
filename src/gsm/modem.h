@@ -13,6 +13,7 @@ namespace M66
 class GsmModem {
  public:
   const ModemState& State;
+  const char* const Imei;
 
  public:
   GsmModem(AtPipe& pipe);
@@ -42,7 +43,6 @@ class GsmModem {
 
   static const int32_t maxlenght_pCG = 32;
   static const int32_t kWorkBuffLength = 384;
-
  private:
   // ModemOperateState opstate;
   // ModemAnswerState ackstate;
@@ -54,6 +54,9 @@ class GsmModem {
   int32_t regstatus;
   int32_t csqquality;
   uint32_t smsid;
+
+  static const int32_t kImeiLength = 32;
+  char imei_[kImeiLength];
 
   char workbuff[kWorkBuffLength];
   bool wrong_in_response;
@@ -77,6 +80,8 @@ class GsmModem {
   void Resume_QI();
 
   void DeleteSMS(int32_t id);
+
+  void UpdateImei();
 
  private:
   void CheckConnStatus(const char* ack, int32_t len);

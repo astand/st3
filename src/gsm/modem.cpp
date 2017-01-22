@@ -76,7 +76,7 @@ static bool WrongAnswer(const ResponseState& st)
   return (st == kError || st == kAlter || st == kUnknown);
 }
 /* ------------------------------------------------------------------------- */
-GsmModem::GsmModem(AtPipe& pipe) : State(mdmstate_), /*InetState(qistate_),*/ pipe_(pipe),
+GsmModem::GsmModem(AtPipe& pipe) : State(mdmstate_), Imei(imei_), pipe_(pipe),
   answ_(pipe.answer()), pipeState(pipe.State)
 {
 }
@@ -124,6 +124,7 @@ bool GsmModem::SyncPipe()
     return false;
 
   wrong_in_response = false;
+  UpdateImei();
   Send("AT&D1\r\n");
   AtResponse(AT_OK);
   Send("AT+CMGF=0\r\n");
@@ -339,6 +340,19 @@ void GsmModem::DeleteSMS(int32_t smsid)
   AtResponse("OK");
 }
 
+
+void GsmModem::UpdateImei()
+{
+  Send("AT+GSN\r\n", 200);
+  int32_t ret = AtResponse();
+
+  if (ret > 0)
+  {
+    uint16_t cpy_len = (ret < kImeiLength - 1) ? (ret) : (kImeiLength - 1);
+    memcpy(imei_, answ_, cpy_len);
+    imei_[cpy_len] = '\0';
+  }
+}
 
 void GsmModem::CheckConnStatus(const char* ack, int32_t len)
 {

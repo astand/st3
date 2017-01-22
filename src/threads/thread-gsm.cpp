@@ -145,7 +145,6 @@ struct
 #define INFO_STRING_MASK "IMEI=%s,VERSION=%d.%d.%d,NAME=%s"
 
 char testinfostring[64];
-static char imei_str[32] = "111110002220000";
 
 void GsmSwitchOn(void)
 {
@@ -327,7 +326,7 @@ int32_t GTftpRRQParse(uint16_t len)
 
     case ID_GET_INFO:
       sprintf(testinfostring, INFO_STRING_MASK,
-              imei_str, MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, memconf.ID);
+              m66.Imei, MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, memconf.ID);
       fsize = strlen(testinfostring);
       break;
 
