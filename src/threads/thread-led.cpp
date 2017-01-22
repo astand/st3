@@ -3,6 +3,7 @@
 #include "factory/switch-maker.h"
 
 extern uint8_t GetIntegerModemState();
+extern uint8_t GetIntegerGPSState();
 
 /* ------------------------------------------------------------------------- */
 static uint32_t led1_pallete[7] =
@@ -16,6 +17,17 @@ static uint32_t led1_pallete[7] =
   0
 };
 
+/* ------------------------------------------------------------------------- */
+static uint32_t led2_pallete[7] =
+{
+  0x311,      /* */
+  0x10001,    /* */
+  0x33333333, /* */
+  0xFFF,      /* */
+  0xCCCCCCCC, /* */
+  0x031,      /* */
+  0
+};
 void Led1SchedulingProcess()
 {
   static ISwitchable& led1 = SwitchMaker::GetLed1();
@@ -29,6 +41,13 @@ void Led1SchedulingProcess()
 
 void Led2SchedulingProcess()
 {
+  static ISwitchable& led2 = SwitchMaker::GetLed2();
+  int32_t id = GetIntegerGPSState();
+  led2_pallete[id] = __ror(led2_pallete[id], 1);
+  led2.off();
+
+  if ((led2_pallete[id]) & 1)
+    led2.on();
 }
 
 void tskLed(void*)

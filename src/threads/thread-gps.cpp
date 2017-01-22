@@ -116,34 +116,6 @@ uint8_t ConvAtoICsm(uint8_t* msg)
 
   return cchsum;
 }
-/* ------------------------------------------------------------------------- */
-//void DmaAverage()
-//{
-//  if (gdma_state == eDMA_Ready)
-//  {
-////    ADC1->CR2  &= ADC_CR2_ADON;
-//    adc_average[0] = adc_average[1] = adc_average[2] = 0;
-
-//    for (int i = 0; i < ADC_COUNT_OF_SAMPLES; i++)
-//    {
-//      adc_average[0] += dma_adc_raw[i * 3 + 0];
-//      adc_average[1] += dma_adc_raw[i * 3 + 1];
-//      adc_average[2] += dma_adc_raw[i * 3 + 2];
-//    }
-
-//    adc_average[0] /= ADC_COUNT_OF_SAMPLES;
-//    adc_average[1] /= ADC_COUNT_OF_SAMPLES;
-//    adc_average[2] /= ADC_COUNT_OF_SAMPLES;
-//    gdma_state = eDMA_Idle;
-////    ADC1->CR2  |= ADC_CR2_ADON;
-////    for(int i = 0; i < 1000; i++) __NOP();
-////    ADC1->CR2  |= ADC_CR2_SWSTART;
-//  }
-//  else if (gdma_state == eDMA_Error)
-//    DEADLOOP;
-//  else
-//    __NOP();
-//}
 
 /* ------------------------------------------------------------------------- */
 void DummyWait(uint32_t ii)
@@ -186,12 +158,6 @@ int32_t NMEA_Check(uint8_t* obuf)
 
   return 0;
 }
-
-
-
-
-
-
 
 
 /* ------------------------------------------------------------------------- *
@@ -286,15 +252,6 @@ void TrackProcess()
       break;
   }
 }
-
-
-uint8_t GpsLedHand()
-{
-  /* ??? return state number for LED indication */
-  return trackinst.Get();
-}
-
-
 
 
 /* Jconf read from memory -------------------------------------------------- */
@@ -490,17 +447,15 @@ int32_t PrintTextLink(char* inb, uint16_t inblen)
 }
 
 
-
-//void tskGps(void*)
-//{
-//  while (1)
-//  {
-//    __nop();
-//  }
-//}
-
 void Start_GpsThread()
 {
   xTaskCreate(tskGps, "tskGps", kLowStackSz, (void*)NULL, kPrio_IDLE, NULL);
+}
+
+
+
+uint8_t GetIntegerGPSState()
+{
+  return trackinst.Get();
 }
 
