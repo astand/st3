@@ -29,7 +29,7 @@
 #define USARTx_RX_AF                    GPIO_AF_USART2
 #define USARTx_RX_PinSource             GPIO_PinSource3
 
-static RingBuffer gsm_tx(1024);
+static RingBuffer gsm_tx(4096);
 static RingBuffer gsm_rx(1024);
 static UartHal gsmuart(USARTx);
 

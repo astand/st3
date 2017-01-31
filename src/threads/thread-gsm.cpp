@@ -188,9 +188,6 @@ int32_t GTftpSend(uint16_t len)
     return 0;
   }
 
-  while ((binPipe.CanWrite() < 512))
-    osPass();
-
   switch (bsin.getFid())
   {
     case (ID_GET_FILENOTES):
@@ -236,6 +233,10 @@ int32_t GTftpSend(uint16_t len)
   DBG_2Gsm("ftp-> OPC:%04x. ID:%04x. Size:%d\n", bsin.from->opc,
            bsin.from->blockid, blksize);
   bsin.bchief.FixLastBid(blksize);
+
+  while ((binPipe.CanWrite() < blksize + 200))
+    osPass();
+
   binPipe.Write((const uint8_t*)(bsin.from), 0, blksize + 4);
   return 0;
 }
