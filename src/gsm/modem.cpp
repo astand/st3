@@ -239,6 +239,7 @@ int32_t GsmModem::IsConnectionAlive()
   if (pipeState != kOk)
     return -2;
 
+  mdmstate_ = kConnected;
   return 0;
 }
 

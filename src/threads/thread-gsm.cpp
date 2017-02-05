@@ -685,7 +685,7 @@ void tskGsm(void*)
       {
         osPass();
 
-        if (dcd_state)
+        if (dcd_state || sessTim.Elapsed())
         {
           g_GsmMainState = eG_Disconnect;
           break;
