@@ -11,10 +11,10 @@
 #define GSM_DEBUG
 #define GSM2_DEBUG
 #define PROT_DEBUG
-#define MODEM_DEBUG
+//#define MODEM_DEBUG
 #define COMMON_DEBUG
-//#define GPS_DBG
-//#define GPS_2DBG
+#define GPS_DBG
+#define GPS_2DBG
 
 #define FalsePrintf while(0)((int (*)(const char *, ...))0)
 /* Gsm low level debug ----------------------------------------------------- */

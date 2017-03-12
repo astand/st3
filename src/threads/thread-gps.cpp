@@ -290,15 +290,23 @@ void NMEA_Parse(int32_t len)
 
   if (*pmark == Navi::RMC_PREFIX)
   {
-    DBG_Gps("/* -------------------------------- */\n");
     scoor.RMCParse(gpssens);
+    DBG_Gps("%s\n", gpssens);
   }
   else if (*pmark == Navi::VTG_PREFIX)
+  {
     scoor.VTGParse(gpssens);
+    DBG_Gps("%s\n", gpssens);
+  }
   else if (*pmark == Navi::GGA_PREFIX)
+  {
     scoor.GGAParse(gpssens);
-
-  DBG_Gps("%s\n", gpssens);
+    // DBG_Gps("%s\n", gpssens);
+  }
+  else
+  {
+    // DBG_Gps("%s\n", gpssens);
+  }
 }
 
 
