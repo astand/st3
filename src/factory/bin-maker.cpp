@@ -6,7 +6,6 @@
 IStreamable& GetBinPipe()
 {
   static Stuff::BinaryPipe bp_(GetGsmPipe());
-  
   return bp_;
 }
 

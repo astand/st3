@@ -43,7 +43,7 @@ class TrekSaver {
   void CheckNewPageStarting();
   void SaveNewNote( IFlashStorable& note);
   void ManageSaving();
-  
+
   uint32_t PageTailCells() {
     return (NotesMapper::MemoryOnPage(sector_) / NotesMapper::NOTE_STEP);
   }

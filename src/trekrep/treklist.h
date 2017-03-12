@@ -18,7 +18,7 @@ class TrekList : public ITrekList {
   virtual int32_t GetTrekSize(uint16_t req_id);
   virtual int32_t GetListIndex(uint16_t store_id);
 
- public: 
+ public:
   void ReadLastNote(uint8_t* buf);
   void ReadLastNote(IFlashStorable& obj);
 
