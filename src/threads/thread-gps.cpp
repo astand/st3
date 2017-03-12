@@ -88,9 +88,10 @@ void ANaviPrint(char* bfu, const  Navi& inst)
   sprintf (bfu, "{ lat:%d.%06d,lon:%d.%06d,", inst.lafull / 1000000,
            inst.lafull % 1000000, inst.lofull / 1000000, inst.lofull % 1000000);
   sprintf(bfu + strlen(bfu),
-          "titl:\"%04d-%02d-%02dT%02d:%02d:%02d\",spd:%d, dist:%d },",
+          "titl:\"%04d-%02d-%02dT%02d:%02d:%02d\",spd:%d, dist:%d, kurs:%d },",
           inst.clnd.year + 2000, inst.clnd.month, inst.clnd.day, inst.clnd.hr,
-          inst.clnd.min, inst.clnd.sec, inst.spd / 100, inst.accum_dist / 10);
+          inst.clnd.min, inst.clnd.sec, inst.spd / 100, inst.accum_dist,
+          inst.liveKurs / 100);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -189,7 +190,7 @@ void TrackProcess()
     case (eMove):
 
       // if (GetTim(dbg_to) <= scoor.MathTo(DEDUG_TO))
-      if (dbgTim.Ticks() <= scoor.MathTo(DEDUG_TO))
+      if (scoor.CoerseChanged() || dbgTim.Ticks() <= scoor.MathTo(DEDUG_TO))
       {
         scoor.FreezeFixSpd();
         scoor.FreezeDistance();
@@ -290,15 +291,23 @@ void NMEA_Parse(int32_t len)
 
   if (*pmark == Navi::RMC_PREFIX)
   {
-    DBG_Gps("/* -------------------------------- */\n");
     scoor.RMCParse(gpssens);
+    DBG_Gps("%s\n", gpssens);
   }
   else if (*pmark == Navi::VTG_PREFIX)
+  {
     scoor.VTGParse(gpssens);
+    DBG_Gps("%s\n", gpssens);
+  }
   else if (*pmark == Navi::GGA_PREFIX)
+  {
     scoor.GGAParse(gpssens);
-
-  DBG_Gps("%s\n", gpssens);
+    // DBG_Gps("%s\n", gpssens);
+  }
+  else
+  {
+    // DBG_Gps("%s\n", gpssens);
+  }
 }
 
 
@@ -334,9 +343,9 @@ void tskGps(void*)
   // LoadTim(dbg_to, 1000);
 //  MEM_SaveAddress();
   treksaver.Init();
-//  int16_t ret_cnt = FileRefreshList();
   treklist.RefreshTrekList();
   treklist.ReadLastNote(storechunk);
+  scoor.InitFromRestored();
 //  FileListNotification();
 //  DBG_Common("end %d\n", track_saver.address);
 

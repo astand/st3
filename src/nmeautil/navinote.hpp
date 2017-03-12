@@ -39,9 +39,6 @@ __packed class NaviNote {
   static uint16_t Lenght() {
     return sizeof(NaviNote);
   }
-
- protected:
-  void MathDistance(float vic);
 };
 
 /* ------------------------------------------------------------------------- *
@@ -71,6 +68,7 @@ class Navi : public NaviNote, public  IFlashStorable {
   static const int8_t	P_RMC_LONGEW = 6;
   static const int8_t	P_VTG_VALID  = 9;
   static const int8_t	P_VTG_SPD = 7;
+  static const int8_t	P_VTG_COERSE = 1;
   static const int8_t P_GGA_ALT = 9;
 
   static const uint16_t FIX_SPD_VAL = (30 * 100);
@@ -82,13 +80,17 @@ class Navi : public NaviNote, public  IFlashStorable {
 
   bool rmcvalid;
   uint16_t fixspd;
-  float intermediate_dist;
+  uint16_t fixkurs;
+  uint16_t liveKurs;
+  double intermediate_dist;
 
   Navi();
 
   void Copy(Navi* patient);
+  void InitFromRestored();
 
   uint32_t MathTo(uint32_t firstto);
+  int32_t CoerseChanged();
 
   int16_t SetLatitude(const char*);
   int16_t SetLongitude(const char*);
