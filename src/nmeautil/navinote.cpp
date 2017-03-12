@@ -1,10 +1,5 @@
 #include "navinote.hpp"
-
-/* ------------------------------------------------------------------------- */
-void NaviNote::MathDistance(float vic)
-{
-  accum_dist += (uint32_t)vic;
-}
+#include <stdlib.h>
 
 /* ------------------------------------------------------------------------- */
 int32_t NaviNote::SetL(const char* b, uint8_t l)
@@ -38,13 +33,19 @@ Navi::Navi()
   rmcvalid = false;
 }
 
+
+void Navi::InitFromRestored()
+{
+  intermediate_dist = accum_dist / 1000.0;
+}
+
 /* ------------------------------------------------------------------------- */
 int16_t Navi::SetLatitude(const char* buf)
 {
   lafull = SetL(str0::ToSym(buf, P_RMC_LAT), 2);
 
   if (*str0::ToSym(buf, P_RMC_LATNS) != 'N')
-    lafull = - lafull;
+    lafull = -lafull;
 
   return 0;
 }
@@ -86,12 +87,11 @@ bool Navi::VTGParse(const char* vbuf)
 {
   /* get ground speed in 10 meters/h (xxx.xx kmh * 100) */
   spd = str0::Atod((str0::ToSym(vbuf, P_VTG_SPD)), 3, 2);
+  liveKurs = str0::Atod((str0::ToSym(vbuf, P_VTG_COERSE)), 3, 2);
 
-  /* make distance every sec in 0.1 meter */
-//	if (spd > 100)
-//		intermediate_dist += (double)spd / (double)36;
   if (mvdetector.HandleSpeed(spd))
-    intermediate_dist += (double)spd / (double)36;;
+    // spd in 1 kmh / 3600 = distance in meters
+    intermediate_dist += (((double)spd / 100.0) / 3600.0);
 
   return true;
 }
@@ -125,8 +125,8 @@ void Navi::FreezeFixSpd()
 /* ------------------------------------------------------------------------- */
 void Navi::FreezeDistance()
 {
-  MathDistance(intermediate_dist);
-  intermediate_dist = 0;
+  /// distance for saving to memory LSB 1m
+  accum_dist = (uint32_t)(intermediate_dist * 1000);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -169,6 +169,19 @@ uint32_t Navi::MathTo(uint32_t fto)
   among = ((newspd * newspd) >> 3) - (newspd * 5) + 140;
   among = among * 3600 / newspd;
   return (fto >= among) ? ((fto - among)) : (0);
+}
+
+int32_t Navi::CoerseChanged()
+{
+  int32_t diff_kurs = labs(fixkurs - liveKurs);
+
+  if (diff_kurs > 500)
+  {
+    fixkurs = liveKurs;
+    return 1;
+  }
+  
+  return 0;
 }
 
 /* ------------------------------------------------------------------------- */
