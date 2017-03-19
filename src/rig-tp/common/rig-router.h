@@ -3,6 +3,8 @@
 #include "ARigHandler.h"
 #include "abstract/IProcessable.h"
 
+namespace Rig
+{
 class RigRouter : public IProcessable {
  public:
   RigRouter();
@@ -23,3 +25,5 @@ class RigRouter : public IProcessable {
   ARigHanlder* list[kMaxListCount];
   int32_t listCount;
 };
+// close namespace
+}

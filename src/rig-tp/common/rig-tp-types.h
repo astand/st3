@@ -1,4 +1,6 @@
 #pragma once
+namespace Rig
+{
 
 typedef struct
 {
@@ -17,8 +19,10 @@ typedef enum
   Error
 } RigTxState;
 
-typedef enum 
+typedef enum
 {
   Ignored,
   Handled
 } HandleResult;
+// close namespace
+}

@@ -1,5 +1,7 @@
 #include "rig-router.h"
 
+namespace Rig
+{
 RigRouter::RigRouter()
 {
   for (int32_t i = 0; i < kMaxListCount; i++)
@@ -46,4 +48,6 @@ void RigRouter::PassRigFrame(const RigFrame* frame)
     if (ret == Handled)
       return;
   }
+}
+// close namespace
 }

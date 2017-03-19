@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include "rig-tp-types.h"
 
+namespace Rig
+{
 class ARigHanlder {
  public:
   virtual HandleResult HandleIncome(const RigFrame* frame) = 0;
@@ -11,3 +13,5 @@ class ARigHanlder {
  protected:
   RigTxState rigState;
 };
+// close namespace
+}
