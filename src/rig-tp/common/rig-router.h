@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ARigHandler.h"
+#include "common-handler.h"
 #include "abstract/IProcessable.h"
 
 namespace Rig
@@ -12,8 +12,8 @@ class RigRouter : public IProcessable {
  public:
   virtual void Process();
   // return status of register
-  bool RegisterRigHandler(ARigHanlder* handler);
-  void UnregisterRigHandler(ARigHanlder* handler);
+  bool RegisterRigHandler(CommonHandler* handler);
+  void UnregisterRigHandler(CommonHandler* handler);
   void PassRigFrame(const RigFrame* frame);
 
  protected:
@@ -22,7 +22,7 @@ class RigRouter : public IProcessable {
   static const int32_t kMaxListCount = 16;
 
  private:
-  ARigHanlder* list[kMaxListCount];
+  CommonHandler* list[kMaxListCount];
   int32_t listCount;
 };
 // close namespace

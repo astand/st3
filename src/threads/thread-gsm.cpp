@@ -10,22 +10,22 @@
 #include "oldcommon/magic/magic.h"
 //#include "equip/gsm/gsmprot.h"
 #include "oldcommon/typesdef.h"
+#include "rig-tp/common/rig-router.h"
+#include "rig-tp/info-handler.h"
+#include "rig-tp/track-list-handler.h"
 #include "utility/abstract/io/ISectorWriter.h"
 #include "utility/timers/timer.h"
 #include "factory/modem-maker.h"
 #include "factory/bin-maker.h"
-
-using namespace M66;
-
+#include "factory/services-factory.h"
 #include "generalsett.h"
-
 #include "nmeautil/nmeautil.hpp"
-
 #include "BoardSide.h"
 #include "factory/McuFlashFactory.hpp"
-
 #include "factory/switch-maker.h"
 #include "factory/pipes-maker.h"
+
+using namespace M66;
 
 int32_t PrintYandexLink(char* inb, uint16_t inblen);
 int32_t PrintGoogleLink(char* inb, uint16_t inblen);
@@ -93,12 +93,15 @@ char* ssrv[2] = {serv_ip, serv_prt};
 ISectorWriter* firmsaver = FlashFactory::GetSectorWriter();
 
 GsmModem& m66 = GetGsmModem();
-
-
+Rig::RigRouter rigRouter;
 const int32_t kRxMaxLen = 1024;
+
+InfoHandler infoHand(binPipe);
+TrackListHandler trackHand(binPipe);
 
 uint8_t GSM_TX_Buff[1024];
 uint8_t GSM_RX_Buff[kRxMaxLen];
+//CommonHandler CommonHandler(binPipe);
 
 BoardSideInst bsin;
 
@@ -206,8 +209,6 @@ int32_t GTftpSend(uint16_t len)
       break;
 
     case (ID_GET_INFO):
-//			sprintf((char*)bsin.from->msg,INFO_STRING_MASK,imei_str, memconf.ID);
-      /* ??? need move filling info string to other function */
       strcpy((char*)bsin.from->msg, testinfostring);
       blksize = strlen((char*)bsin.from->msg) + 1;
 
@@ -560,6 +561,9 @@ void tskGsm(void*)
   DBG_Gsm("*<* Gsm task start complete *>*\n\n");
   g_GsmMainState = eG_Start;
   JConfInit();
+  rigRouter.RegisterRigHandler(&infoHand);
+  rigRouter.RegisterRigHandler(&trackHand);
+  ServiceWorker().Register(&rigRouter);
 
   /*------------------------------------------*/
   while (1)     /* deadloop for GSM task */
@@ -705,15 +709,16 @@ void tskGsm(void*)
 
         int32_t ret = binPipe.Read(GSM_RX_Buff, 0, kRxMaxLen);
 
-        if (ret > 0)
+        if (ret >= 6)
         {
           if (igsmTim.Ticks() < 5000)
             igsmTim.Start(1000 * 5);
 
           failTim.Start(1000 * 10 * currgprs->silentto);
+          rigRouter.PassRigFrame((const RigFrame*)GSM_RX_Buff);
         }
 
-        GTftp2Process(GSM_RX_Buff, ret);
+        // GTftp2Process(GSM_RX_Buff, ret);
         break;
       }
 
@@ -757,5 +762,20 @@ void Start_GsmThread()
 uint8_t GetIntegerModemState()
 {
   return static_cast<uint8_t>(m66.State);
+}
+
+const char* BuildInfoString()
+{
+  static char arr[64] = { 0 };
+  static int32_t len = 0;
+
+  if (arr[0] == '\0' || len == 0)
+  {
+    sprintf(arr, INFO_STRING_MASK, m66.Imei, MAJOR_VERSION,
+            MINOR_VERSION, PATCH_VERSION, memconf.ID);
+    len = strlen(arr);
+  }
+
+  return arr;
 }
 
