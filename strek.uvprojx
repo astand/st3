@@ -899,6 +899,36 @@
             </File>
           </Files>
         </Group>
+        <Group>
+          <GroupName>rig-protocol</GroupName>
+          <Files>
+            <File>
+              <FileName>rig-router.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\common\rig-router.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>info-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\info-handler.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>track-list-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\track-list-handler.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>common-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\common\common-handler.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>bid-control.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\common\bid-control.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
       </Groups>
     </Target>
   </Targets>
