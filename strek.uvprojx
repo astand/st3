@@ -444,6 +444,11 @@
               <FileType>8</FileType>
               <FilePath>.\src\threads\thread-gps.cpp</FilePath>
             </File>
+            <File>
+              <FileName>thread-srv.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\threads\thread-srv.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -717,6 +722,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\ccode\utility\framer\crcs\table0-crc.cpp</FilePath>
             </File>
+            <File>
+              <FileName>worker.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\ccode\utility\etc\worker.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -746,6 +756,11 @@
               <FileName>bin-maker.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\src\factory\bin-maker.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>services-factory.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\factory\services-factory.cpp</FilePath>
             </File>
           </Files>
         </Group>
