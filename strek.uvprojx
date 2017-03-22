@@ -903,14 +903,19 @@
           <GroupName>rig-protocol</GroupName>
           <Files>
             <File>
+              <FileName>bid-control.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\common\bid-control.cpp</FilePath>
+            </File>
+            <File>
               <FileName>rig-router.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\src\rig-tp\common\rig-router.cpp</FilePath>
             </File>
             <File>
-              <FileName>info-handler.cpp</FileName>
+              <FileName>a-read-handler.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\src\rig-tp\info-handler.cpp</FilePath>
+              <FilePath>.\src\rig-tp\common\a-read-handler.cpp</FilePath>
             </File>
             <File>
               <FileName>track-list-handler.cpp</FileName>

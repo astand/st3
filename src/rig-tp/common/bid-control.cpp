@@ -1,8 +1,7 @@
 #include "bid-control.h"
 
 
-BidControl::BidControl(int32_t window, int32_t resend, int32_t wait_to) :
-  State(state_)
+void BidControl::Config(int32_t window, int32_t resend, int32_t wait_to)
 {
   window_ = window;
   resend_ = resend;
@@ -14,7 +13,7 @@ void BidControl::StopSending()
 }
 
 
-void BidControl::StartSending()
+void BidControl::ResetAll()
 {
   bidLast = -1;
   bidAck = 0;
@@ -26,10 +25,11 @@ void BidControl::StartSending()
 
 void BidControl::CheckIncomeBid(int32_t recBid)
 {
-  if (recBid == bidAck + 1)
-  {
-    bidAck = recBid;
-  }
+  if (recBid != bidAck + 1)
+    return;
+
+  bidAck = recBid;
+  resended_ = 0;
 
   if (bidAck == bidLast)
   {
@@ -41,7 +41,6 @@ void BidControl::CheckIncomeBid(int32_t recBid)
 void BidControl::ShiftSendBig(bool is_last)
 {
   bidSend += 1;
-  resended_ = 0;
 
   if (is_last && bidLast == -1)
   {
@@ -73,3 +72,6 @@ void BidControl::ProcessControl()
     state_ = Denied;
   }
 }
+
+
+

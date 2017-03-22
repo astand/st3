@@ -1,15 +1,16 @@
 #pragma once
 
 #include "abstract/IStreamable.h"
+#include "a-rig-handler.h"
 #include "rig-tp-types.h"
 #include "rig-codes.h"
 #include "bid-control.h"
 
 namespace Rig
 {
-class CommonHandler {
+class AReadHandler : public ARigHandler {
  public:
-  CommonHandler(IStreamable& strm);
+  AReadHandler(IStreamable& strm);
 
  public:
   virtual HandleResult HandleIncome(const RigFrame* frame);
@@ -17,11 +18,13 @@ class CommonHandler {
 
  protected:
   int32_t fsize;
-  ID selfId;
-  BidControl& bid;
-  virtual int32_t UserIncomeHandler(const RigFrame* in, RigFrame* const out);
-  virtual int32_t UserProcess(RigFrame* const out, int32_t need_block);
-  virtual BidControl& MakeBid();
+  BidControl bid;
+  uint16_t selfId;
+  virtual int32_t UserIncomeHead(const RigFrame* in, RigFrame* const out) = 0;
+  virtual int32_t UserProcess(RigFrame* const out, int32_t need_block) = 0;
+  virtual int32_t UserIncomeAck(const RigFrame* in, RigFrame* const out) {
+    return 0;
+  }
 
  private:
   int32_t kMaxLen;

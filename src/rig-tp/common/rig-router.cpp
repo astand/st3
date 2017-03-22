@@ -7,7 +7,7 @@ RigRouter::RigRouter()
   for (int32_t i = 0; i < kMaxListCount; i++)
   {
     // clear all pointers
-    list[i] = (CommonHandler*)0;
+    list[i] = (ARigHandler*)0;
     listCount = 0;
   }
 }
@@ -21,7 +21,7 @@ void RigRouter::Process()
   }
 }
 
-bool RigRouter::RegisterRigHandler(CommonHandler* handler)
+bool RigRouter::RegisterRigHandler(ARigHandler* handler)
 {
   if (listCount == kMaxListCount)
     return false;
@@ -31,7 +31,7 @@ bool RigRouter::RegisterRigHandler(CommonHandler* handler)
 }
 
 
-void RigRouter::UnregisterRigHandler(CommonHandler* handler)
+void RigRouter::UnregisterRigHandler(ARigHandler* handler)
 {
   // Not Implemented Yet
   // It must scan list and remove handler if it was found

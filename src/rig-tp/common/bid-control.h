@@ -19,9 +19,10 @@ class BidControl {
   int32_t bidAck;
 
  public:
-  BidControl(int32_t window, int32_t resend, int32_t wait_to);
+  BidControl() : State(state_) {}
+  void Config(int32_t window, int32_t resend, int32_t wait_to);
   void StopSending();
-  void StartSending();
+  void ResetAll();
   void CheckIncomeBid(int32_t recBid);
   void ShiftSendBig(bool is_last = false);
   void ProcessControl();

@@ -15,12 +15,12 @@ typedef enum
 // Rig IDs
 typedef enum
 {
-  NONE = 0,
-  TRACKLIST = 1,
-  TRACK = 2,
-  INFO = 4,
-  ECHO = 5,
-  FIRMWARE = 6,
-} ID;
+  None = 0,
+  TrekList = 1,
+  SoleTrek = 2,
+  Firmware = 3,
+  Info = 4,
+  Echo = 128
+} RigId;
 // close namespace
 }
