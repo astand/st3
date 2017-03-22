@@ -13,6 +13,7 @@
 #include "rig-tp/common/rig-router.h"
 #include "rig-tp/info-handler.h"
 #include "rig-tp/track-list-handler.h"
+#include "rig-tp/sole-trek-handler.h"
 #include "utility/abstract/io/ISectorWriter.h"
 #include "utility/timers/timer.h"
 #include "factory/modem-maker.h"
@@ -97,7 +98,8 @@ Rig::RigRouter rigRouter;
 const int32_t kRxMaxLen = 1024;
 
 InfoHandler infoHand(binPipe);
-TrackListHandler trackHand(binPipe);
+TrekListHandler trackHand(binPipe);
+SoleTrekHandler soleHand(binPipe);
 
 uint8_t GSM_TX_Buff[1024];
 uint8_t GSM_RX_Buff[kRxMaxLen];
@@ -563,6 +565,7 @@ void tskGsm(void*)
   JConfInit();
   rigRouter.RegisterRigHandler(&infoHand);
   rigRouter.RegisterRigHandler(&trackHand);
+  rigRouter.RegisterRigHandler(&soleHand);
   ServiceWorker().Register(&rigRouter);
 
   /*------------------------------------------*/
@@ -778,4 +781,5 @@ const char* BuildInfoString()
 
   return arr;
 }
+
 

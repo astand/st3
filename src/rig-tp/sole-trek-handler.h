@@ -5,9 +5,13 @@
 
 using namespace Rig;
 
-class TrekListHandler : public AReadHandler {
+class SoleTrekHandler : public AReadHandler {
  public:
-  TrekListHandler(IStreamable& strm);
+  SoleTrekHandler(IStreamable& strm);
   virtual int32_t UserIncomeHead(const RigFrame* in, RigFrame* const out);
   virtual int32_t UserProcess(RigFrame* const out, int32_t need_block);
+ private:
+  int32_t reqId;
 };
+
+

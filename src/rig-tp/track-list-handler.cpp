@@ -1,12 +1,23 @@
 #include "track-list-handler.h"
+#include "threads/thread-gps.h"
 
-int32_t TrackListHandler::UserIncomeHandler(const RigFrame* in, RigFrame* const out)
+static ITrekList* const trList = FileLink();
+
+TrekListHandler::TrekListHandler(IStreamable& strm) : AReadHandler(strm)
 {
-  return 0;
+  selfId = TrekList;
+}
+
+int32_t TrekListHandler::UserIncomeHead(const RigFrame* in, RigFrame* const out)
+{
+  fsize = trList->RefreshTrekList();
+  *((uint32_t*)out->Data) = fsize;
+  return 4;
 }
 
 
-int32_t TrackListHandler::UserProcess(RigFrame* const out, int32_t need_block)
+int32_t TrekListHandler::UserProcess(RigFrame* const out, int32_t need_block)
 {
-  return 0;
+  int32_t blksize = trList->UploadList((need_block - 1) * 25, 25, out->Data);
+  return blksize;
 }

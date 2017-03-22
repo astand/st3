@@ -923,14 +923,14 @@
               <FilePath>.\src\rig-tp\track-list-handler.cpp</FilePath>
             </File>
             <File>
-              <FileName>common-handler.cpp</FileName>
+              <FileName>sole-trek-handler.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\src\rig-tp\common\common-handler.cpp</FilePath>
+              <FilePath>.\src\rig-tp\sole-trek-handler.cpp</FilePath>
             </File>
             <File>
-              <FileName>bid-control.cpp</FileName>
+              <FileName>info-handler.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\src\rig-tp\common\bid-control.cpp</FilePath>
+              <FilePath>.\src\rig-tp\info-handler.cpp</FilePath>
             </File>
           </Files>
         </Group>
