@@ -444,6 +444,11 @@
               <FileType>8</FileType>
               <FilePath>.\src\threads\thread-gps.cpp</FilePath>
             </File>
+            <File>
+              <FileName>thread-srv.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\threads\thread-srv.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -663,16 +668,6 @@
           <GroupName>ccutil</GroupName>
           <Files>
             <File>
-              <FileName>Retarget.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\ccode\utility\sys\Retarget.c</FilePath>
-            </File>
-            <File>
-              <FileName>ringbuffer.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\ccode\utility\buffers\ringbuffer.cpp</FilePath>
-            </File>
-            <File>
               <FileName>tickerup.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\ccode\utility\timers\tickerup.cpp</FilePath>
@@ -681,6 +676,21 @@
               <FileName>timer.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\ccode\utility\timers\timer.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>d-timer.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\ccode\utility\timers\d-timer.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Retarget.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\ccode\utility\sys\Retarget.c</FilePath>
+            </File>
+            <File>
+              <FileName>ringbuffer.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\ccode\utility\buffers\ringbuffer.cpp</FilePath>
             </File>
             <File>
               <FileName>uart-stream.cpp</FileName>
@@ -717,6 +727,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\ccode\utility\framer\crcs\table0-crc.cpp</FilePath>
             </File>
+            <File>
+              <FileName>worker.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\ccode\utility\etc\worker.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -746,6 +761,11 @@
               <FileName>bin-maker.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\src\factory\bin-maker.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>services-factory.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\factory\services-factory.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -876,6 +896,41 @@
               <FileName>bin-pipe.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\ccode\equip\pipes\bin-pipe.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>rig-protocol</GroupName>
+          <Files>
+            <File>
+              <FileName>bid-control.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\common\bid-control.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>rig-router.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\common\rig-router.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>a-read-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\common\a-read-handler.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>track-list-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\track-list-handler.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>sole-trek-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\sole-trek-handler.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>info-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\info-handler.cpp</FilePath>
             </File>
           </Files>
         </Group>

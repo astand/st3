@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <stdio.h>
 
 /* If this global definition enable -> task debug is demploy --------------- */
 #define TASKDBG
@@ -12,9 +13,10 @@
 #define GSM2_DEBUG
 #define PROT_DEBUG
 //#define MODEM_DEBUG
-#define COMMON_DEBUG
-#define GPS_DBG
-#define GPS_2DBG
+//#define COMMON_DEBUG
+//#define GPS_DBG
+//#define GPS_2DBG
+#define RIG_DEBUG
 
 #define FalsePrintf while(0)((int (*)(const char *, ...))0)
 /* Gsm low level debug ----------------------------------------------------- */
@@ -64,6 +66,12 @@
 #define DBG_2Gps printf
 #else
 #define DBG_2Gps FalsePrintf
+#endif
+
+#if defined (TASKDBG) && defined (RIG_DEBUG)
+#define DBG_Rig printf
+#else
+#define DBG_Rig FalsePrintf
 #endif
 /* ------------------------------------------------------------------------- */
 
