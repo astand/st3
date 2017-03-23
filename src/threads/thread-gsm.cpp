@@ -6,14 +6,7 @@
 #include "Configs/Version.h"
 #include "rtos-init.h"
 #include "threads/thread-gps.h"
-// #include "oldcommon/gsm/at-commands.h"
-#include "oldcommon/magic/magic.h"
-//#include "equip/gsm/gsmprot.h"
-#include "oldcommon/typesdef.h"
-#include "rig-tp/common/rig-router.h"
-#include "rig-tp/info-handler.h"
-#include "rig-tp/track-list-handler.h"
-#include "rig-tp/sole-trek-handler.h"
+#include "rig-tp/rig-inc.h"
 #include "utility/abstract/io/ISectorWriter.h"
 #include "utility/timers/timer.h"
 #include "factory/modem-maker.h"
@@ -21,10 +14,12 @@
 #include "factory/services-factory.h"
 #include "generalsett.h"
 #include "nmeautil/nmeautil.hpp"
-#include "BoardSide.h"
 #include "factory/McuFlashFactory.hpp"
 #include "factory/switch-maker.h"
 #include "factory/pipes-maker.h"
+
+#define GPRS_ACTIVE_TIMEOUT   15000
+#define NET_REG_SEC_TIMEOUT   180
 
 using namespace M66;
 
@@ -32,8 +27,7 @@ int32_t PrintYandexLink(char* inb, uint16_t inblen);
 int32_t PrintGoogleLink(char* inb, uint16_t inblen);
 int32_t PrintTextLink(char* inb, uint16_t inblen);
 
-using namespace MAGIC;
-//using namespace ATFORSIM900;
+//using namespace MAGIC;
 using namespace Timers;
 
 static Timer tftpTim;
@@ -105,8 +99,6 @@ uint8_t GSM_TX_Buff[1024];
 uint8_t GSM_RX_Buff[kRxMaxLen];
 //CommonHandler CommonHandler(binPipe);
 
-BoardSideInst bsin;
-
 uint8_t smsoptions;
 
 uint32_t time_register_wait = 0;
@@ -162,252 +154,6 @@ void GsmSwitchOn(void)
   osDelay(9000);
   return;
 }
-
-/* ------------------------------------------------------------------------- *
-
- * ------------------------------------------------------------------------- */
-int32_t GTftpSend(uint16_t len)
-{
-  int32_t blksize = 0;
-
-  if (bsin.SendActionDenied())
-    /* fid == 0 or fid are DATA_OUT flag */
-    return 0;
-
-  if (bsin.bchief.IsBlockSendPermitted())
-  {
-    bsin.headDataUp();
-    tftpTim.Start(15000);
-  }
-  else
-  {
-    if (tftpTim.Elapsed())
-    {
-      if (!bsin.bchief.RollBackBidsend())
-      {
-        DBG_2Gsm("ftp-> Resend count fail. Stop sending\n");
-        bsin.ResetAll();
-      }
-    }
-
-    return 0;
-  }
-
-  switch (bsin.getFid())
-  {
-    case (ID_GET_FILENOTES):
-      blksize = trList->UploadList((bsin.bchief.bidsend - 1) * 25, 25,
-                                   bsin.from->msg);
-      break;
-
-    case (ID_GET_TRACK):
-      blksize = trList->UploadTrek(bsin.NeedTreck(), (bsin.bchief.bidsend - 1) * 25,
-                                   (25 * NaviNote::Lenght()),
-                                   bsin.from->msg);
-//      blksize = FileTrackUpload(bsin.from->msg,
-//                                (bsin.bchief.bidsend - 1) * mxmap::count_block,
-//                                mxmap::occur_block, bsin.NeedTreck());
-//      blksize *= navinote::Lenght();
-      break;
-
-    case (ID_GET_INFO):
-      strcpy((char*)bsin.from->msg, testinfostring);
-      blksize = strlen((char*)bsin.from->msg) + 1;
-
-      if (bsin.bchief.bidsend != 1)
-        blksize = 0;
-
-      break;
-
-    case (ID_GET_ECHO):
-    default:
-      bsin.ResetAll();
-      break;
-  } // switch
-
-  if (blksize < 0)
-  {
-    /* error */
-    bsin.ResetAll();
-    bsin.headError((uint16_t)blksize);
-    blksize = 0;
-  }
-
-  DBG_2Gsm("ftp-> OPC:%04x. ID:%04x. Size:%d\n", bsin.from->opc,
-           bsin.from->blockid, blksize);
-  bsin.bchief.FixLastBid(blksize);
-
-  while ((binPipe.CanWrite() < blksize + 200))
-    osPass();
-
-  binPipe.Write((const uint8_t*)(bsin.from), 0, blksize + 4);
-  return 0;
-}
-
-
-/* ------------------------------------------------------------------------- *
-
- * ------------------------------------------------------------------------- */
-int32_t GTftpACKParse(uint16_t len)
-{
-  tftpTim.Start(15000);
-  bsin.Validation();
-
-  if (bsin.bchief.Last())
-    bsin.ResetAll();
-
-  return 0;
-}
-
-/* ------------------------------------------------------------------------- *
-
- * ------------------------------------------------------------------------- */
-int32_t GTftpDATAParse(int32_t len)
-{
-  /* not correct block ID */
-  if (!bsin.Validation())
-    return 0;
-
-  /* ??? need check timer for correct exit from Fid() state */
-  len -= 4;
-  bsin.headAckUp();
-  bsin.FInsize.AddPassing((int32_t)len);
-
-  switch (bsin.getFid())
-  {
-    case (ID_FIRMWARE):
-      firmsaver->Program(bsin.come->msg, len);
-
-      if (len == 0)
-      {
-        firm_inst.load = true;
-        firm_inst.accept = true;
-        firm_inst.res = true;
-        sessTim.Start(1000);
-      }
-
-      break;
-
-    default:
-      break;
-  }
-
-  if (len == 0)
-    bsin.ResetAll();
-
-  binPipe.Write((uint8_t*)(bsin.from), 0, 4);
-  return 0;
-}
-/* ------------------------------------------------------------------------- *
-
- * ------------------------------------------------------------------------- */
-int32_t GTftpRRQParse(uint16_t len)
-{
-  int32_t fsize = -1, ret0;
-  bsin.headUp();
-  bsin.Options(0x0401);
-  bsin.setFid();
-
-  switch (bsin.getFid())
-  {
-    case ID_GET_FILENOTES:
-      fsize = trList->RefreshTrekList();
-      break;
-
-    case ID_GET_TRACK:
-      ret0 = trList->GetListIndex(bsin.Options());
-
-      if (ret0 >= 0)
-        fsize = trList->GetTrekSize(bsin.NeedTreck(ret0));
-      else
-      {
-        fsize = 0;
-        bsin.headError(6);
-        bsin.ResetAll();
-      }
-
-      break;
-
-    case ID_GET_INFO:
-      sprintf(testinfostring, INFO_STRING_MASK,
-              m66.Imei, MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, memconf.ID);
-      fsize = strlen(testinfostring);
-      break;
-
-    case ID_GET_ECHO:
-      fsize = 0;
-      bsin.ResetAll();
-      break;
-
-    default:
-      bsin.headError(5);
-      fsize = 0;
-      break;
-  }
-
-  DBG_2Gsm("RRQ> Size:%d\n", fsize);
-  bsin.FSize((uint32_t)(fsize));
-  binPipe.Write((uint8_t*)(bsin.from), 0, 6 + 4);
-  bsin.bchief.Anew();
-  return 0;
-}
-
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
-int32_t GTftpWRQParse(uint16_t len)
-{
-  len -= 4;
-
-  if (len < 6) return -1;
-
-  bsin.ResetAll();
-
-  if (bsin.FSize() != 0)
-  {
-    /* correct file size waiting */
-    bsin.setFid();
-    firmsaver->Erase();
-  }
-
-  bsin.headUp();
-  binPipe.Write((uint8_t*)(bsin.from), 0, 4);
-  DBG_2Gsm("WRQ> Size:%d\n", bsin.FSize());
-  return 0;
-}
-
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
-
-
-void GTftp2Process(uint8_t* msg, int32_t len)
-{
-  bsin.come = (GTftp2_t*)msg;
-  bsin.from = (GTftp2_t*)GSM_TX_Buff;
-
-  if (len > 3)
-  {
-    DBG_2Gsm("ftp <- opc=%d, id=%04x. len=%d\n", bsin.come->opc, bsin.come->blockid,
-             len);
-
-    if (bsin.come->opc == OPC_RRQ)
-      GTftpRRQParse(len);
-    else if (bsin.come->opc == OPC_ACK)
-      GTftpACKParse(len);
-    else if (bsin.come->opc == OPC_WRQ)
-      GTftpWRQParse(len);
-    else if (bsin.come->opc == OPC_DATA)
-      GTftpDATAParse((int32_t)len);
-    else { }
-  }
-
-  GTftpSend(0);
-}
-
-/* ------------------------------------------------------------------------- *
- *
- * ------------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------- */
 void JConfInit()
@@ -470,7 +216,7 @@ uint8_t MainSmsParsing(char* inSms, int32_t sms_len)
   uint32_t preamb;
   DBG_Gsm("%s\n", inSms);
   DBG_Gsm("%x\n", *(uint32_t*)(inSms));
-  preamb = swapp::Word(*(uint32_t*)(inSms));
+  preamb = __rev(*(uint32_t*)(inSms));
   bool is_answer = true;
 
   switch (*(uint32_t*)(inSms))
@@ -678,7 +424,6 @@ void tskGsm(void*)
           sessTim.Start(1000 * 10 * currgprs->bigto);
           igsmTim.Start(1000 * 20); /* break time out */
           failTim.Start(1000 * 10 * currgprs->silentto); /* global stop timeout */
-          bsin.ResetAll();
           g_GsmMainState = eG_ConnIdle;
           break;
         }
@@ -700,8 +445,10 @@ void tskGsm(void*)
 
         if (igsmTim.Elapsed())
         {
+          rigRouter.SetActive(false);
           igsmTim.Start(GPRS_ACTIVE_TIMEOUT);
           int32_t session = m66.IsConnectionAlive();
+          rigRouter.SetActive(true);
 
           if (session != 0 || failTim.Elapsed())
           {
@@ -721,7 +468,6 @@ void tskGsm(void*)
           rigRouter.PassRigFrame((const RigFrame*)GSM_RX_Buff);
         }
 
-        // GTftp2Process(GSM_RX_Buff, ret);
         break;
       }
 
@@ -781,5 +527,3 @@ const char* BuildInfoString()
 
   return arr;
 }
-
-

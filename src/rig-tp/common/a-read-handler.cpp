@@ -1,10 +1,9 @@
 #include "a-read-handler.h"
 #include "factory/services-factory.h"
+#include "dbgconf.h"
 
 namespace Rig
 {
-static int32_t testCnt = 0;
-
 
 AReadHandler::AReadHandler(IStreamable& strm) :
   rigFrameBuff_(WorkBuffer()),
@@ -21,6 +20,8 @@ HandleResult AReadHandler::HandleIncome(const RigFrame* frame)
 
   int32_t ret = 0;
   rigFrame->RigId = selfId;
+  DBG_Rig("[RigPack] : INCOME <<< OPC=%04d RIGID=%04d NUM=%04d\n",
+          frame->Opc, frame->RigId, frame->BlockNum);
 
   if (frame->Opc == RRQ)
   {
@@ -50,6 +51,8 @@ HandleResult AReadHandler::HandleIncome(const RigFrame* frame)
 
   if (ret > 0)
   {
+    DBG_Rig("[RigPack] : SENDING >>> OPC: %4d  RIGID: %4d  NUM: %4d Len[%5d]\n",
+            rigFrame->Opc, rigFrame->RigId, rigFrame->BlockNum, ret);
     strm_.Write(rigFrameBuff_, 0, ret + 6);
   }
 
@@ -73,13 +76,12 @@ void AReadHandler::Process()
       // writing isn't performed
       break;
 
+    DBG_Rig("[RigPack] : SENDING >>> OPC: %4d  RIGID: %4d  NUM: %4d Len[%5d]\n",
+            rigFrame->Opc, rigFrame->RigId, rigFrame->BlockNum, ret);
     strm_.Write(rigFrameBuff_, 0, ret + 6);
     bid.ShiftSendBig((ret == 0) ? (true) : (false));
     bid.ProcessControl();
   }
-
-  testCnt++;
 }
-
+// namespace close
 }
-

@@ -10,10 +10,15 @@ RigRouter::RigRouter()
     list[i] = (ARigHandler*)0;
     listCount = 0;
   }
+
+  isActive = true;
 }
 
 void RigRouter::Process()
 {
+  if (isActive == false)
+    return;
+
   // Call process for all registered RigHandlers
   for (int i = 0; i < listCount; i++)
   {
@@ -36,6 +41,12 @@ void RigRouter::UnregisterRigHandler(ARigHandler* handler)
   // Not Implemented Yet
   // It must scan list and remove handler if it was found
   // THIS MUST GARANTEE THAT LIST HAVE NOT EMPTY CELLS !!!
+}
+
+
+void RigRouter::SetActive(bool state)
+{
+  isActive = state;
 }
 
 

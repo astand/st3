@@ -15,8 +15,7 @@ class RigRouter : public IProcessable {
   bool RegisterRigHandler(ARigHandler* handler);
   void UnregisterRigHandler(ARigHandler* handler);
   void PassRigFrame(const RigFrame* frame);
-
- protected:
+  void SetActive(bool state);
 
  private:
   static const int32_t kMaxListCount = 16;
@@ -24,6 +23,7 @@ class RigRouter : public IProcessable {
  private:
   ARigHandler* list[kMaxListCount];
   int32_t listCount;
+  bool isActive;
 };
 // close namespace
 }

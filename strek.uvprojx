@@ -410,11 +410,6 @@
               <FilePath>.\src\generalsett.cpp</FilePath>
             </File>
             <File>
-              <FileName>BoardSide.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\src\BoardSide.cpp</FilePath>
-            </File>
-            <File>
               <FileName>KillFlash.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\src\KillFlash.cpp</FilePath>
