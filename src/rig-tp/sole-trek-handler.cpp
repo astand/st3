@@ -27,7 +27,8 @@ int32_t SoleTrekHandler::UserIncomeHead(const RigFrame* in, RigFrame* const out)
     sole_size = strlen((char*)out->Data);
   }
 
-  return sole_size;
+  HWREG(out->Data) = sole_size;
+  return 4;
 }
 
 

@@ -69,9 +69,9 @@ void BidControl::ProcessControl()
 
   if (bidSend > (bidAck + window_) || bidLast == bidSend)
   {
+    // window stack is full or last block was already send
     state_ = Denied;
   }
+  else
+    state_ = Allowed;
 }
-
-
-
