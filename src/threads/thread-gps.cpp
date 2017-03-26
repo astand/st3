@@ -203,7 +203,7 @@ void TrackProcess()
       if (!scoor.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]suspend moving --> goto movesuspend\n");
-        waitmovTim.Start(60000);
+        waitmovTim.Start(15 * 60 * 1000);
         trackinst.st0 = eMovesuspend;
         dbgTim.Start(10000);
       }
