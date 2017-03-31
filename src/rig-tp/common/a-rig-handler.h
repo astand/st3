@@ -8,7 +8,7 @@ namespace Rig
 
 class ARigHandler {
  public:
-  virtual HandleResult HandleIncome(const RigFrame* frame) = 0;
+  virtual HandleResult HandleIncome(const RigFrame* frame, int32_t dataSize) = 0;
   virtual void Process() = 0;
 };
 

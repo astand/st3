@@ -14,7 +14,7 @@ class RigRouter : public IProcessable {
   // return status of register
   bool RegisterRigHandler(ARigHandler* handler);
   void UnregisterRigHandler(ARigHandler* handler);
-  void PassRigFrame(const RigFrame* frame);
+  void PassRigFrame(const RigFrame* frame, int32_t blockLen);
   void SetActive(bool state);
 
  private:

@@ -50,11 +50,11 @@ void RigRouter::SetActive(bool state)
 }
 
 
-void RigRouter::PassRigFrame(const RigFrame* frame)
+void RigRouter::PassRigFrame(const RigFrame* frame, int32_t blockLen)
 {
   for (int i = 0; i < listCount; i++)
   {
-    HandleResult ret = list[i]->HandleIncome(frame);
+    HandleResult ret = list[i]->HandleIncome(frame, blockLen - 6);
 
     if (ret == Handled)
       return;
