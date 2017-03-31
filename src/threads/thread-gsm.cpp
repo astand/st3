@@ -94,6 +94,7 @@ const int32_t kRxMaxLen = 1024;
 InfoHandler infoHand(binPipe);
 TrekListHandler trackHand(binPipe);
 SoleTrekHandler soleHand(binPipe);
+FirmHandler firmHand(binPipe);
 
 uint8_t GSM_TX_Buff[1024];
 uint8_t GSM_RX_Buff[kRxMaxLen];
@@ -298,6 +299,21 @@ bool IsReadyForConnect()
 
   return ret;
 }
+
+static void OnFirmwareFinished(int32_t firm_size)
+{
+}
+
+void RigStuffInit()
+{
+  rigRouter.RegisterRigHandler(&infoHand);
+  rigRouter.RegisterRigHandler(&trackHand);
+  rigRouter.RegisterRigHandler(&soleHand);
+  rigRouter.RegisterRigHandler(&firmHand);
+  firmHand.SetCallback(OnFirmwareFinished);
+  ServiceWorker().Register(&rigRouter);
+}
+
 /* ------------------------------------------------------------------------- *
  * ------------------------------------------------------------------------- *
  *                            TASK GSM START
@@ -309,10 +325,7 @@ void tskGsm(void*)
   DBG_Gsm("*<* Gsm task start complete *>*\n\n");
   g_GsmMainState = eG_Start;
   JConfInit();
-  rigRouter.RegisterRigHandler(&infoHand);
-  rigRouter.RegisterRigHandler(&trackHand);
-  rigRouter.RegisterRigHandler(&soleHand);
-  ServiceWorker().Register(&rigRouter);
+  RigStuffInit();
 
   /*------------------------------------------*/
   while (1)     /* deadloop for GSM task */
