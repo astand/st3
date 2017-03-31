@@ -24,11 +24,7 @@ class AReadHandler : public ARigHandler {
   virtual int32_t UserIncomeHead(const RigFrame* in, int32_t dataSize) = 0;
   virtual int32_t UserProcess(int32_t need_block) = 0;
   virtual int32_t UserIncomeAck(const RigFrame* in) {
-  uint16_t selfId;
-  virtual int32_t UserIncomeHead(const RigFrame* in, RigFrame* const out) = 0;
-  virtual int32_t UserProcess(RigFrame* const out, int32_t need_block) = 0;
-  virtual int32_t UserIncomeAck(const RigFrame* in, RigFrame* const out) {
-    return 0;
+    return -1;
   }
 
  private:

@@ -18,7 +18,7 @@ HandleResult AReadHandler::HandleIncome(const RigFrame* frame, int32_t dataSize)
   if (frame->RigId != selfId)
     return Ignored;
 
-  int32_t ret = 0;
+  int32_t ret = -1;
   rigFrame->RigId = selfId;
   DBG_Rig("[RigPack] : INCOME <<< OPC=%04d RIGID=%04d NUM=%04d\n",
           frame->Opc, frame->RigId, frame->BlockNum);
@@ -49,7 +49,7 @@ HandleResult AReadHandler::HandleIncome(const RigFrame* frame, int32_t dataSize)
     ret = UserIncomeAck(frame);
   }
 
-  if (ret > 0)
+  if (ret >= 0)
   {
     DBG_Rig("[RigPack] : SENDING >>> OPC: %4d  RIGID: %4d  NUM: %4d Len[%5d]\n",
             rigFrame->Opc, rigFrame->RigId, rigFrame->BlockNum, ret);
