@@ -913,6 +913,11 @@
               <FilePath>.\src\rig-tp\common\a-read-handler.cpp</FilePath>
             </File>
             <File>
+              <FileName>a-write-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\common\a-write-handler.cpp</FilePath>
+            </File>
+            <File>
               <FileName>track-list-handler.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\src\rig-tp\track-list-handler.cpp</FilePath>
@@ -926,6 +931,11 @@
               <FileName>info-handler.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\src\rig-tp\info-handler.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>firm-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\firm-handler.cpp</FilePath>
             </File>
           </Files>
         </Group>
