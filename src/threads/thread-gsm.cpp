@@ -465,7 +465,7 @@ void tskGsm(void*)
             igsmTim.Start(1000 * 5);
 
           failTim.Start(1000 * 10 * currgprs->silentto);
-          rigRouter.PassRigFrame((const RigFrame*)GSM_RX_Buff);
+          rigRouter.PassRigFrame((const RigFrame*)GSM_RX_Buff, ret);
         }
 
         break;
