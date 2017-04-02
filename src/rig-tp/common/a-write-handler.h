@@ -17,7 +17,11 @@ class AWriteHandler : public ARigHandler {
   virtual void Process();
 
  public:
+  /// implementation is provided by user. It must return int value as
+  /// result of operation
+  /// @UserIncomeHead - when return -1 user doesn't accept request (no answer)
   virtual int32_t UserIncomeHead(const RigFrame* in, int32_t dataSize) = 0;
+  /// @UserIncomeData - when return -1 user doesn't accept request (no answer)
   virtual int32_t UserIncomeData(const RigFrame* in, int32_t dataSize) = 0;
 
  protected:

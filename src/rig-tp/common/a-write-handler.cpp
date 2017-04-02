@@ -26,10 +26,11 @@ HandleResult AWriteHandler::HandleIncome(const RigFrame* frame, int32_t dataSize
     rigFrame->BlockNum = 0;
     ret = UserIncomeHead(frame, dataSize);
 
-    if (ret > 0)
+    if (ret >= 0)
     {
       if (rigFrame->Opc == ERR)
       {
+        /// error will be sent
       }
       else
       {
@@ -40,10 +41,11 @@ HandleResult AWriteHandler::HandleIncome(const RigFrame* frame, int32_t dataSize
   else if (frame->Opc == DATA)
   {
     rigFrame->Opc = ACK;
+    rigFrame->BlockNum = frame->BlockNum;
 
-    if (rigFrame->BlockNum == ack_block)
+    if (frame->BlockNum == ack_block)
     {
-      rigFrame->BlockNum = ack_block;
+      /// handle only approval data block
       ack_block++;
       ret = UserIncomeData(frame, dataSize);
     }
