@@ -302,6 +302,10 @@ bool IsReadyForConnect()
 
 static void OnFirmwareFinished(int32_t firm_size)
 {
+  firm_inst.load = true;
+  firm_inst.accept = true;
+  firm_inst.res = true;
+  sessTim.Start(1000);
 }
 
 void RigStuffInit()
