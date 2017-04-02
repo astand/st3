@@ -195,7 +195,6 @@ void TrackProcess()
         scoor.FreezeFixSpd();
         scoor.FreezeDistance();
         dbgTim.Start(DEDUG_TO);
-        // LoadTim(dbg_to, DEDUG_TO);
         ANaviPrint(dbgbuf, scoor);
         DBG_2Gps("%s\n", dbgbuf);
         treksaver.SaveNote(storechunk);
@@ -204,11 +203,9 @@ void TrackProcess()
       if (!scoor.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]suspend moving --> goto movesuspend\n");
-        waitmovTim.Start(60000);
-        // LoadTim(waitmove_to, 600000); /*10MIN*/
+        waitmovTim.Start(15 * 60 * 1000);
         trackinst.st0 = eMovesuspend;
         dbgTim.Start(10000);
-        // LoadTim(dbg_to, 10000); /* min 10 sec to next fix from suspend */
       }
 
       break;
@@ -241,7 +238,6 @@ void TrackProcess()
         scoor.accum_dist += 1000;
         ANaviPrint(dbgbuf, scoor);
         // dbgTim.Start(1000);
-        // LoadTim(dbg_to, 1000);
         treksaver.SaveNote(storechunk);
         ANaviPrint(dbgbuf, scoor);
         DBG_2Gps(dbgbuf);
@@ -339,8 +335,6 @@ void tskGps(void*)
 //  PrintAllIDs();
   agpsTim.Start(10000);
   dbgTim.Start(1000);
-  // LoadTim(agps_to, 10000);
-  // LoadTim(dbg_to, 1000);
 //  MEM_SaveAddress();
   treksaver.Init();
   treklist.RefreshTrekList();
@@ -353,7 +347,6 @@ void tskGps(void*)
   if (false)
   {
     dbgTim.Start(1000);
-    // LoadTim(dbg_to, 1000);
     treksaver.SetNextTrek();
     scoor.clnd.min += 1;
 
@@ -374,7 +367,6 @@ void tskGps(void*)
       /* ??? test for power consumption measurement */
 //      gps_en.Off();
       // agpsTim.Start(10000);
-      // LoadTim(agps_to, 1000);
     }
 
     if ((ret = NMEA_Check((uint8_t*)gpssens)) > 0)

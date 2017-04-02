@@ -10,7 +10,7 @@ SoleTrekHandler::SoleTrekHandler(IStreamable& strm) : AReadHandler(strm)
   selfId = SoleTrek;
 }
 
-int32_t SoleTrekHandler::UserIncomeHead(const RigFrame* in, RigFrame* const out)
+int32_t SoleTrekHandler::UserIncomeHead(const RigFrame* in, int32_t dataSize)
 {
   int32_t sole_id = trList->GetListIndex(HWREGH(in->Data));
   int32_t sole_size = 0;
@@ -22,17 +22,17 @@ int32_t SoleTrekHandler::UserIncomeHead(const RigFrame* in, RigFrame* const out)
   }
   else
   {
-    out->Opc = ERR;
-    sprintf((char*)out->Data, "File not found.");
-    sole_size = strlen((char*)out->Data);
+    rigFrame->Opc = ERR;
+    sprintf((char*)rigFrame->Data, "File not found.");
+    sole_size = strlen((char*)rigFrame->Data);
   }
 
-  HWREG(out->Data) = sole_size;
+  HWREG(rigFrame->Data) = sole_size;
   return 4;
 }
 
 
-int32_t SoleTrekHandler::UserProcess(RigFrame* const out, int32_t need_block)
+int32_t SoleTrekHandler::UserProcess(int32_t need_block)
 {
-  return trList->UploadTrek(reqId, (need_block - 1) * 25, (25 * NaviNote::Lenght()), out->Data);
+  return trList->UploadTrek(reqId, (need_block - 1) * 25, (25 * NaviNote::Lenght()), rigFrame->Data);
 }

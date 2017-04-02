@@ -9,7 +9,7 @@ InfoHandler::InfoHandler(IStreamable& strm) : AReadHandler(strm)
   selfId = Rig::Info;
 }
 
-int32_t InfoHandler::UserIncomeHead(const RigFrame* in, RigFrame* const out)
+int32_t InfoHandler::UserIncomeHead(const RigFrame* in, int32_t dataSize)
 {
   if (fsize == 0)
   {
@@ -17,16 +17,16 @@ int32_t InfoHandler::UserIncomeHead(const RigFrame* in, RigFrame* const out)
     fsize = strlen(toInfoString);
   }
 
-  *((uint32_t*)out->Data) = fsize;
+  *((uint32_t*)rigFrame->Data) = fsize;
   return 4;
 }
 
 
-int32_t InfoHandler::UserProcess(RigFrame* const out, int32_t need_block)
+int32_t InfoHandler::UserProcess(int32_t need_block)
 {
   if (need_block == 1)
   {
-    strcpy((char*)out->Data, toInfoString);
+    strcpy((char*)rigFrame->Data, toInfoString);
     return fsize;
   }
 

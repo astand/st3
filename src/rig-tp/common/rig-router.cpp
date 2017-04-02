@@ -10,10 +10,15 @@ RigRouter::RigRouter()
     list[i] = (ARigHandler*)0;
     listCount = 0;
   }
+
+  isActive = true;
 }
 
 void RigRouter::Process()
 {
+  if (isActive == false)
+    return;
+
   // Call process for all registered RigHandlers
   for (int i = 0; i < listCount; i++)
   {
@@ -39,11 +44,17 @@ void RigRouter::UnregisterRigHandler(ARigHandler* handler)
 }
 
 
-void RigRouter::PassRigFrame(const RigFrame* frame)
+void RigRouter::SetActive(bool state)
+{
+  isActive = state;
+}
+
+
+void RigRouter::PassRigFrame(const RigFrame* frame, int32_t blockLen)
 {
   for (int i = 0; i < listCount; i++)
   {
-    HandleResult ret = list[i]->HandleIncome(frame);
+    HandleResult ret = list[i]->HandleIncome(frame, blockLen - 6);
 
     if (ret == Handled)
       return;
