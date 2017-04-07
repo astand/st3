@@ -10,7 +10,7 @@ namespace Rig
 {
 class AReadHandler : public ARigHandler {
  public:
-  AReadHandler(IStreamable& strm);
+  AReadHandler(IStreamable& strm, uint16_t id);
 
  public:
   virtual HandleResult HandleIncome(const RigFrame* frame, int32_t dataSize);

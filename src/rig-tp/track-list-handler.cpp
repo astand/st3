@@ -3,9 +3,8 @@
 
 static ITrekList* const trList = FileLink();
 
-TrekListHandler::TrekListHandler(IStreamable& strm) : AReadHandler(strm)
+TrekListHandler::TrekListHandler(IStreamable& strm) : AReadHandler(strm, Rig::TrekList)
 {
-  selfId = TrekList;
 }
 
 int32_t TrekListHandler::UserIncomeHead(const RigFrame* in, int32_t dataSize)

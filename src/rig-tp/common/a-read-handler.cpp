@@ -5,7 +5,8 @@
 namespace Rig
 {
 
-AReadHandler::AReadHandler(IStreamable& strm) :
+AReadHandler::AReadHandler(IStreamable& strm, uint16_t id) :
+  selfId(id),
   rigFrameBuff_(WorkBuffer()),
   strm_(strm)
 {
