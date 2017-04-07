@@ -95,6 +95,7 @@ InfoHandler infoHand(binPipe);
 TrekListHandler trackHand(binPipe);
 SoleTrekHandler soleHand(binPipe);
 FirmHandler firmHand(binPipe);
+EchoHandler echoHand(binPipe);
 
 uint8_t GSM_TX_Buff[1024];
 uint8_t GSM_RX_Buff[kRxMaxLen];
@@ -314,6 +315,7 @@ void RigStuffInit()
   rigRouter.RegisterRigHandler(&trackHand);
   rigRouter.RegisterRigHandler(&soleHand);
   rigRouter.RegisterRigHandler(&firmHand);
+  rigRouter.RegisterRigHandler(&echoHand);
   firmHand.SetCallback(OnFirmwareFinished);
   ServiceWorker().Register(&rigRouter);
 }

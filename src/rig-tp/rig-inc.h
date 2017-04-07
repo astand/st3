@@ -6,3 +6,4 @@
 #include "track-list-handler.h"
 #include "sole-trek-handler.h"
 #include "firm-handler.h"
+#include "echo-handler.h"

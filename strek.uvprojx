@@ -937,6 +937,11 @@
               <FileType>8</FileType>
               <FilePath>.\src\rig-tp\firm-handler.cpp</FilePath>
             </File>
+            <File>
+              <FileName>echo-handler.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\rig-tp\echo-handler.cpp</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
