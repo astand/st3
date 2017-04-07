@@ -5,16 +5,13 @@
 #include "Configs/MainConfig.h"
 #include "Configs/Version.h"
 #include "rtos-init.h"
-#include "threads/thread-gps.h"
 #include "rig-tp/rig-inc.h"
-#include "utility/abstract/io/ISectorWriter.h"
 #include "utility/timers/timer.h"
 #include "factory/modem-maker.h"
 #include "factory/bin-maker.h"
 #include "factory/services-factory.h"
 #include "generalsett.h"
 #include "nmeautil/nmeautil.hpp"
-#include "factory/McuFlashFactory.hpp"
 #include "factory/switch-maker.h"
 #include "factory/pipes-maker.h"
 
@@ -22,15 +19,12 @@
 #define NET_REG_SEC_TIMEOUT   180
 
 using namespace M66;
+using namespace Timers;
 
 int32_t PrintYandexLink(char* inb, uint16_t inblen);
 int32_t PrintGoogleLink(char* inb, uint16_t inblen);
 int32_t PrintTextLink(char* inb, uint16_t inblen);
 
-//using namespace MAGIC;
-using namespace Timers;
-
-static Timer tftpTim;
 static Timer sessTim;
 static Timer igsmTim;
 static Timer gregTim;
@@ -38,43 +32,14 @@ static Timer failTim;
 
 
 static IStreamable& binPipe = GetBinPipe();
-
-/* ------------------------------------------------------------------------- *
- *    Prototypes of static functions
- * ------------------------------------------------------------------------- */
-//uint8_t GSM_Send_SMS(uint8_t* NumberPtr, uint8_t Len, uint8_t Options);
-int32_t GsmGetAck (uint16_t rx_to, const char* cmp_s, const char* alt_s);
 int32_t JConfSocketUpdate();
-uint8_t m66_CheckFailAnswer(char* buf, int32_t len);
 /* -------------- +++++++++++++++++++++++++++++++++++++++ ------------------ */
-// void osDelayWrapper(uint16_t tim);
-
-/* ------------------------------------------------------------------------- *
- * 	       -----------------Defines sector -----------------
- * ------------------------------------------------------------------------- */
-#define GSM_SMS_REPLY_NEED				0x01
-#define GSM_SMS_LONG_VALID				0x02
-/* ------------------------------------------------------------------------- */
-#define GSM_SMS_FORMAT_MASK			  0x30
-#define GSM_SMS_FORMAT_7BIT			  0x00
-#define GSM_SMS_FORMAT_16BIT			0x10
-#define GSM_SMS_FORMAT_HEX				0x20
-#define GSM_SMS_FORMAT_BINARY		  0x30
-
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-#define NET_RESTART_TO		        60000
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
 
 ISwitchable& en4v = SwitchMaker::GetGsmEn();
 ISwitchable& pwk = SwitchMaker::GetPwrKey();
 const ISwitchable& dcd = SwitchMaker::GetDCDSignal();
 
 static bool dcd_state = true;
-
-static ITrekList* const trList = FileLink();
-
 
 static GeneralSett memconf = GeneralSett();
 static const TcpInstance_c defgprs = TcpInstance_c();
@@ -85,11 +50,8 @@ static char serv_ip[20];
 static char serv_prt[10];
 char* ssrv[2] = {serv_ip, serv_prt};
 
-ISectorWriter* firmsaver = FlashFactory::GetSectorWriter();
-
 GsmModem& m66 = GetGsmModem();
 Rig::RigRouter rigRouter;
-const int32_t kRxMaxLen = 1024;
 
 InfoHandler infoHand(binPipe);
 TrekListHandler trackHand(binPipe);
@@ -97,11 +59,9 @@ SoleTrekHandler soleHand(binPipe);
 FirmHandler firmHand(binPipe);
 EchoHandler echoHand(binPipe);
 
+const int32_t kRxMaxLen = 1024;
 uint8_t GSM_TX_Buff[1024];
 uint8_t GSM_RX_Buff[kRxMaxLen];
-//CommonHandler CommonHandler(binPipe);
-
-uint8_t smsoptions;
 
 uint32_t time_register_wait = 0;
 /* ------------------------------------------------------------------------- */
@@ -142,8 +102,6 @@ struct
 } firm_inst = {false, false, false};
 
 #define INFO_STRING_MASK "IMEI=%s,VERSION=%d.%d.%d,NAME=%s"
-
-char testinfostring[64];
 
 void GsmSwitchOn(void)
 {
