@@ -5,9 +5,8 @@
 
 static ITrekList* const trList = FileLink();
 
-SoleTrekHandler::SoleTrekHandler(IStreamable& strm) : AReadHandler(strm)
+SoleTrekHandler::SoleTrekHandler(IStreamable& strm) : AReadHandler(strm, Rig::SoleTrek)
 {
-  selfId = SoleTrek;
 }
 
 int32_t SoleTrekHandler::UserIncomeHead(const RigFrame* in, int32_t dataSize)

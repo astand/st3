@@ -4,9 +4,8 @@
 
 extern const char* BuildInfoString();
 
-InfoHandler::InfoHandler(IStreamable& strm) : AReadHandler(strm)
+InfoHandler::InfoHandler(IStreamable& strm) : AReadHandler(strm, Rig::Info)
 {
-  selfId = Rig::Info;
 }
 
 int32_t InfoHandler::UserIncomeHead(const RigFrame* in, int32_t dataSize)
