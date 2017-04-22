@@ -22,7 +22,6 @@
 using namespace Timers;
 using namespace MAGIC;
 
-
 Navi scoor;
 IFlashStorable& storechunk = (IFlashStorable&)scoor;
 ISwitchable& gps_en = SwitchMaker::GetGpsEn();
@@ -33,23 +32,10 @@ static uint16_t* const track_num = (uint16_t*)(spbuf + 2);
 static Timer agpsTim(1000, true);
 static Timer dbgTim(1000, true);
 static Timer waitmovTim(1000, false);
-
-
-
-/* ------------------------------------------------------------------------- */
-
 static const uint32_t DEDUG_TO = (120 * 1000);
 static char dbgbuf[256];
-//typedef enum
-//{
-//  eDMA_COMPLETE = 0,
-//  eDMA_ERROR = 1,
-//  eDMA_IDLE = 2
-//} eDmaTransfer_t;
-//volatile eDmaTransfer_t g_DmaTransferState;
 
-
-typedef  enum
+typedef enum
 {
   eNotvalid = 0,
   eWaitmove = 1,
@@ -68,16 +54,9 @@ struct
 } trackinst = {eNotvalid};
 
 
-//Mx25drv fiend(patter, 0);
-
 IFlashMemory& fiend = PipesMaker::GetFlashMemory();
 TrekSaver treksaver(fiend);
 TrekList treklist(fiend);
-
-
-uint16_t memaddr = 0;
-uint16_t memid = 0;
-//static UartControl agg = UartControl(SERIAL_PORT, 256);
 
 static IStreamable& agg = PipesMaker::GetGpsStream();
 
@@ -188,8 +167,6 @@ void TrackProcess()
       break;
 
     case (eMove):
-
-      // if (GetTim(dbg_to) <= scoor.MathTo(DEDUG_TO))
       if (scoor.CoerseChanged() || dbgTim.Ticks() <= scoor.MathTo(DEDUG_TO))
       {
         scoor.FreezeFixSpd();
@@ -217,7 +194,6 @@ void TrackProcess()
         trackinst.st0 = eMove;
       }
 
-      // if (GetTim(waitmove_to) == 0)
       if (waitmovTim.Elapsed())
       {
         /* new ID */
@@ -228,8 +204,6 @@ void TrackProcess()
       break;
 
     case (eTestWriting):
-
-      // if (!GetTim(dbg_to))
       if (dbgTim.Elapsed())
       {
         scoor.spd = (scoor.spd + 1) & 0x7f;
@@ -237,7 +211,6 @@ void TrackProcess()
         scoor.lafull += 20;
         scoor.accum_dist += 1000;
         ANaviPrint(dbgbuf, scoor);
-        // dbgTim.Start(1000);
         treksaver.SaveNote(storechunk);
         ANaviPrint(dbgbuf, scoor);
         DBG_2Gps(dbgbuf);
@@ -454,9 +427,7 @@ void Start_GpsThread()
 }
 
 
-
 uint8_t GetIntegerGPSState()
 {
   return trackinst.Get();
 }
-
