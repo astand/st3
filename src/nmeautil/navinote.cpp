@@ -175,12 +175,12 @@ int32_t Navi::CoerseChanged()
 {
   int32_t diff_kurs = labs(fixkurs - liveKurs);
 
-  if (diff_kurs > 500)
+  if (diff_kurs > (10 * 100))
   {
     fixkurs = liveKurs;
     return 1;
   }
-  
+
   return 0;
 }
 
