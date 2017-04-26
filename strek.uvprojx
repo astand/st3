@@ -414,6 +414,11 @@
               <FileType>8</FileType>
               <FilePath>.\src\KillFlash.cpp</FilePath>
             </File>
+            <File>
+              <FileName>serv-param.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\gsm\sett\serv-param.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

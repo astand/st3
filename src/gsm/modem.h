@@ -4,7 +4,6 @@
 #include "equip/gsm/at-pipe.h"
 #include "equip/gsm/modemstate.h"
 #include "equip/gsm/modemanswerstate.h"
-#include "equip/gsm/IConnectionParams.h"
 #include "abstract/IStreamable.h"
 
 namespace M66
