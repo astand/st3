@@ -30,6 +30,7 @@ class ServParam {
   int32_t UpdateParametr(ParamPosition pos, const char* param, int32_t len = 0);
   int32_t PrintParametr(ParamPosition pos, char* dst) const;
   const char* GetParametr(ParamPosition pos) const;
+  void ResetAll();
 
  protected:
   /// server may be presented as IP or as web address

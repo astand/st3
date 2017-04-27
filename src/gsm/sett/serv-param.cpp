@@ -102,3 +102,13 @@ int32_t ServParam::ReWriteParam(char* dst, const char* src, int32_t max_len)
   return i;
 }
 
+
+void ServParam::ResetAll()
+{
+  server_[0] = NullSym;
+  port_[0] = NullSym;
+  apn_[0] = NullSym;
+  user_[0] = NullSym;
+  pswrd_[0] = NullSym;
+}
+

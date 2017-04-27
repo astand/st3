@@ -10,6 +10,13 @@ typedef struct
   uint16_t Reserved0;
   uint16_t Reserved1;
   uint16_t Reserved2;
+
+  void Reset() {
+    Big = 7200;
+    Silent = 45;
+    ReConnect = 40;
+  }
+
 } TimParam;
 
 

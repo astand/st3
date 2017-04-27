@@ -6,8 +6,11 @@
 class GprsParam {
  public:
   GprsParam() {}
-  void Clean();
-  
+  void Clean() {
+    serv.ResetAll();
+    tim.Reset();
+  }
+
  public:
   ServParam serv;
   TimParam tim;
