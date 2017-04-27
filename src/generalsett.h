@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "utility/etc/str0.h"
+#include "gsm/sett/gprs-param.h"
 
 /* ------------------------------------------------------------------------- */
 __packed class SocketBits_c {
@@ -46,7 +47,7 @@ __packed class TcpInstance_c {
 
 
 /* ------------------------------------------------------------------------- */
-__packed class GeneralSett {
+class GeneralSett {
   static const uint8_t TCP_NUMS = 5;
   static const uint16_t ID_LENGHT = 64;
   static const uint32_t CURRENT_SIGN = 0x0700031;
@@ -55,6 +56,8 @@ __packed class GeneralSett {
   char ID[ID_LENGHT];
   TcpInstance_c IP[TCP_NUMS];
   SocketBits_c sockbit;
+  GprsParam gprs[3];
+
  public:
   GeneralSett();
 

@@ -14,6 +14,9 @@
 #include "nmeautil/nmeautil.hpp"
 #include "factory/switch-maker.h"
 #include "factory/pipes-maker.h"
+#include "gsm/sett/gprs-param.h"
+#include "gsm/sms-delegate.h"
+
 
 #define GPRS_ACTIVE_TIMEOUT   15000
 #define NET_REG_SEC_TIMEOUT   180
@@ -33,6 +36,10 @@ static Timer failTim;
 
 static IStreamable& binPipe = GetBinPipe();
 int32_t JConfSocketUpdate();
+
+SmsDelegate mapSms;
+SmsDelegate servSms;
+
 /* -------------- +++++++++++++++++++++++++++++++++++++++ ------------------ */
 
 ISwitchable& en4v = SwitchMaker::GetGsmEn();
@@ -115,6 +122,29 @@ void GsmSwitchOn(void)
   return;
 }
 
+
+int32_t MapHandler(const SmsChunkDescriptor& smsdsc, char* ans)
+{
+  return 0;
+}
+
+
+int32_t GprsHandler(const SmsChunkDescriptor& smsdsc, char* ans)
+{
+  if (smsdsc.desc[0].len < 2 || smsdsc.desc[0].text[0] != 'g')
+  {
+    return 0;
+  }
+
+  int32_t paramId = smsdsc.desc[0].text[2] - 0x30;
+
+  if (paramId < 0 || paramId > 2)
+    return 0;
+
+  memconf.gprs[paramId].Parse(smsdsc);
+  return 0;
+}
+
 /* ------------------------------------------------------------------------- */
 void JConfInit()
 {
@@ -125,7 +155,12 @@ void JConfInit()
     memconf.JCDefault();
     JConfSave((uint8_t*)&memconf, memconf.Lenght());
   }
+
+  mapSms.SetProcessor(MapHandler);
+  servSms.SetProcessor(GprsHandler);
+  servSms.SetSuccessor(&mapSms);
 }
+
 /* ------------------------------------------------------------------------- */
 uint32_t JConfNetInit(char* s, char* out)
 {

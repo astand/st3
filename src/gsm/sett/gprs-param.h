@@ -3,15 +3,19 @@
 #include "serv-param.h"
 #include "tim-param.h"
 
+class SmsChunkDescriptor;
+
 class GprsParam {
  public:
   GprsParam() {}
-  void Clean() {
-    serv.ResetAll();
-    tim.Reset();
-  }
+  void Default();
+  int32_t Parse(const SmsChunkDescriptor& dsc);
 
  public:
   ServParam serv;
   TimParam tim;
+
+ private:
+  int32_t ParseServ(const SmsChunkDescriptor& dsc);
+  int32_t ParseTim(const SmsChunkDescriptor& dsc);
 };

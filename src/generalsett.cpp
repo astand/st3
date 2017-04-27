@@ -181,6 +181,10 @@ void GeneralSett::JCDefault()
   for (int i = 0; i < TCP_NUMS; i++)
     IP[i].Default();
 
+  gprs[0].Default();
+  gprs[0].Default();
+  gprs[0].Default();
+  
   SIGN = CURRENT_SIGN;
   sockbit = SocketBits_c();
 }
