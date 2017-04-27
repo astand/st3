@@ -27,8 +27,9 @@ typedef enum
 class ServParam {
  public:
   ServParam() {}
-  int32_t UpdateParametr(ParamPosition pos, const char* param);
-  int32_t PrintParametr(ParamPosition pos, char* dst);
+  int32_t UpdateParametr(ParamPosition pos, const char* param, int32_t len = 0);
+  int32_t PrintParametr(ParamPosition pos, char* dst) const;
+  const char* GetParametr(ParamPosition pos) const;
 
  protected:
   /// server may be presented as IP or as web address
@@ -40,7 +41,7 @@ class ServParam {
   char reserved[RESERVED_LENGTH];
 
  private:
-  void RefreshOutsidePointers(char* pointers[]);
+  void RefreshOutsidePointers(char* pointers[]) const;
   int32_t ReWriteParam(char* dst, const char* src, int32_t max_len);
 };
 
