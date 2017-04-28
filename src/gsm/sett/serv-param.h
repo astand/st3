@@ -31,6 +31,9 @@ class ServParam {
   int32_t PrintParametr(ParamPosition pos, char* dst) const;
   const char* GetParametr(ParamPosition pos) const;
   void ResetAll();
+  bool ServerValid() const {
+    return (server_[0] != '\0' && port_[0] != '\0');
+  }
 
  protected:
   /// server may be presented as IP or as web address

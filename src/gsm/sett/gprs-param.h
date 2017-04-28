@@ -10,6 +10,7 @@ class GprsParam {
   GprsParam() {}
   void Default();
   int32_t Parse(const SmsChunkDescriptor& dsc);
+  int32_t Print(char* str);
 
  public:
   ServParam serv;

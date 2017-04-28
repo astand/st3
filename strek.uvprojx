@@ -419,6 +419,16 @@
               <FileType>8</FileType>
               <FilePath>.\src\gsm\sett\serv-param.cpp</FilePath>
             </File>
+            <File>
+              <FileName>gprs-param.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\gsm\sett\gprs-param.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>sms-chunks.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\gsm\sms-chunks.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
