@@ -49,13 +49,9 @@ const ISwitchable& dcd = SwitchMaker::GetDCDSignal();
 static bool dcd_state = true;
 
 static GeneralSett memconf = GeneralSett();
-static const TcpInstance_c defgprs = TcpInstance_c();
-static TcpInstance_c* currgprs = 0;
+static const GprsParam* servP;
 
-
-static char serv_ip[20];
-static char serv_prt[10];
-char* ssrv[2] = {serv_ip, serv_prt};
+const char* netConf[3];
 
 GsmModem& m66 = GetGsmModem();
 Rig::RigRouter rigRouter;
@@ -129,132 +125,81 @@ int32_t MapHandler(const SmsChunkDescriptor& smsdsc, char* ans)
 }
 
 
+int32_t JConfSocketUpdate()
+{
+  int32_t socket_id = memconf.sockbit.Socket();
+  servP = (socket_id != 0) ? (&(memconf.gprs[socket_id - 1])) : (0);
+  netConf[0] = servP->serv.GetParametr(kServer);
+  netConf[1] = servP->serv.GetParametr(kPort);
+  netConf[2] = servP->serv.GetParametr(kAPN);
+  sessTim.Start(1000 * 10 * 1);
+  return 0;
+}
+
+
 int32_t GprsHandler(const SmsChunkDescriptor& smsdsc, char* ans)
 {
-  if (smsdsc.desc[0].len < 2 || smsdsc.desc[0].text[0] != 'g')
+  if (smsdsc.desc[0].len < 2 || smsdsc.desc[0].text[0] != 'G')
   {
     return 0;
   }
 
   int32_t paramId = smsdsc.desc[0].text[2] - 0x30;
 
-  if (paramId < 0 || paramId > 2)
-    return 0;
+  if (paramId > 0 && paramId < 4)
+  {
+    memconf.gprs[paramId - 1].Parse(smsdsc);
+    memconf.gprs[paramId - 1].Print(ans);
+    sprintf((ans + strlen(ans)), " S:%d", paramId);
+  }
+  else if (paramId == 0)
+  {
+    memconf.SocketBits(smsdsc.desc[1].text);
+    int32_t socket = memconf.sockbit.Socket();
+    memconf.gprs[socket - 1].Print(ans);
+    sprintf((ans + strlen(ans)), " S:%d", socket);
+  }
+  else
+  {
+    strcpy(ans, "Nevernye dannye. Poprobuite eshe raz");
+    return strlen(ans);
+  }
 
-  memconf.gprs[paramId].Parse(smsdsc);
-  return 0;
+  JConfSocketUpdate();
+  JConfSave((uint8_t*)&memconf, memconf.Lenght());
+  return strlen(ans);
 }
 
 /* ------------------------------------------------------------------------- */
 void JConfInit()
 {
-  JConfUpload((uint8_t*)&memconf, memconf.Lenght());
+  int32_t conf_len = memconf.Lenght();
+  JConfUpload((uint8_t*)&memconf, conf_len);
 
   if (!memconf.JCIsSign())
   {
     memconf.JCDefault();
-    JConfSave((uint8_t*)&memconf, memconf.Lenght());
+    JConfSave((uint8_t*)&memconf, conf_len);
   }
 
-  mapSms.SetProcessor(MapHandler);
   servSms.SetProcessor(GprsHandler);
   servSms.SetSuccessor(&mapSms);
+  mapSms.SetProcessor(MapHandler);
 }
 
-/* ------------------------------------------------------------------------- */
-uint32_t JConfNetInit(char* s, char* out)
+
+int32_t SmsHandler(char* sms, int32_t len, char* ans)
 {
-  /* ??? why need ret */
-  volatile int32_t ret;
-  uint32_t preamb = __REV(*(uint32_t*)s);
-  uint32_t typepreamb;
-  /* valid value */
-  typepreamb = ((preamb & 0x0000FF00) >> 8) - 0x30;
-  preamb = (preamb & 0x000000FF) - 0x30;
+  static SmsChunkDescriptor smsdsc;
+  bool is_answer = (sms[0] == '*');
+  smsdsc.Parse(sms + 1, len);
+  int32_t ret = servSms.HandleIt(smsdsc, ans);
 
-  if (preamb > 5)
-  {
-    /* error statement */
-    strcpy(out, "oshibka: nevernye parametry\n");
-    return (strlen(out));
-  }
-
-  if (preamb != 0)
-  {
-    if (typepreamb == 0)
-      ret = memconf.IP[preamb - 1].Update(s + 4);
-    else if (typepreamb == 1)
-      ret = memconf.IP[preamb - 1].UpdateTim(s + 4);
-  }
-  else
-    preamb = memconf.SocketBits(s + 4);
-
-  sprintf(out, "%d: ", preamb);
-  memconf.IP[preamb - 1].Print(out + strlen(out));
-  JConfSocketUpdate();
-  JConfSave((uint8_t*)&memconf, memconf.Lenght());
-  return strlen(out);
-}
-/* ------------------------------------------------------------------------- */
-int32_t JConfSocketUpdate()
-{
-  currgprs = (memconf.sockbit.Socket() != 0) ?
-             (&(memconf.IP[memconf.sockbit.Socket() - 1])) : ((TcpInstance_c*)&defgprs);
-  currgprs->PrintIP(ssrv[0]);
-  currgprs->PrintPort(ssrv[1]);
-  sessTim.Start(1000 * 10 * 1);
-  return 0;
-}
-
-uint8_t MainSmsParsing(char* inSms, int32_t sms_len)
-{
-  uint32_t preamb;
-  DBG_Gsm("%s\n", inSms);
-  DBG_Gsm("%x\n", *(uint32_t*)(inSms));
-  preamb = __rev(*(uint32_t*)(inSms));
-  bool is_answer = true;
-
-  switch (*(uint32_t*)(inSms))
-  {
-    case (0x31303023):
-      prdat.len = PrintYandexLink((char*)GSM_TX_Buff, 256);
-      break;
-
-    case (0x32303023):
-      prdat.len = PrintTextLink((char*)GSM_TX_Buff, 256);
-      break;
-
-    case (0x33303023):
-      prdat.len = PrintGoogleLink((char*)GSM_TX_Buff, 256);
-      break;
-
-    default:
-      is_answer = false;
-      break;
-  }
-
-  if ((preamb & 0xFF000000) == 0x2A000000)
-  {
-    // '*' - first symbol
-    preamb &= ~0xFF000000;
-    preamb |= 0x23000000;
-    is_answer = true;
-  }
-
-  switch (preamb & 0xFFFF0000)
-  {
-    case (0x23310000):
-      /* GPRS params */
-      prdat.len = JConfNetInit(inSms, (char*)GSM_TX_Buff);
-      break;
-  } // swirch;
-
-  if (is_answer)
-    m66.SendSMS((const char*)GSM_TX_Buff, prdat.len);
+  if (is_answer && ret > 0)
+    return ret;
 
   return 0;
 }
-
 
 
 /* ------------------------------------------------------------------------- */
@@ -270,10 +215,17 @@ void m66DCDHandle()
 void IncomeSmsHandle()
 {
   int32_t sms_length = 0;
+  int32_t sms_answer;
   sms_length = m66.ListSMS(cTempBuff, kTempBuffLen);
 
   if (sms_length > 1)
-    MainSmsParsing(cTempBuff, sms_length);
+  {
+    // MainSmsParsing(cTempBuff, sms_length);
+    sms_answer = SmsHandler(cTempBuff, sms_length, (char*)GSM_TX_Buff);
+  }
+
+  if (sms_answer > 0)
+    m66.SendSMS((const char*)GSM_TX_Buff, sms_answer);
 }
 
 
@@ -285,10 +237,11 @@ bool IsReadyForConnect()
   {
     sessTim.Start(1000 * 40);
 
-    if (m66.State == kRegOk && currgprs->TcpValid())
-    {
+    if (servP == 0)
+      ret = false;
+
+    if (m66.State == kRegOk && servP->serv.ServerValid())
       ret = true;
-    }
   }
 
   return ret;
@@ -361,6 +314,8 @@ void tskGsm(void*)
                              (time_register_wait + (NET_REG_SEC_TIMEOUT * 2)) : (360);
         gregTim.Start(1000 * time_register_wait);
         g_GsmMainState = (firm_inst.res) ? eG_HardDie : eG_Idle;
+//        SmsHandler("#G01#192.168.1.1#30303#internet.mts.ru", 50, (char*)GSM_TX_Buff);
+//        SmsHandler("#G00#1", 6, (char*)GSM_TX_Buff);
         break;
       }
 
@@ -390,32 +345,8 @@ void tskGsm(void*)
           {
             gregTim.Start(1000 * NET_REG_SEC_TIMEOUT);
           }
-
-          if (true)
-          {
-//            strcpy((char*)GSM_RX_Buff, "#001");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-//            strcpy((char*)GSM_RX_Buff, "#002");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-//            strcpy((char*)GSM_RX_Buff, "#003");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-//            strcpy((char*)GSM_RX_Buff, "#105#64.48.155.8825#20010");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-//            strcpy((char*)GSM_RX_Buff, "#111#012#5#3");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-//
-//						strcpy((char*)GSM_RX_Buff, "?100");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-//												strcpy((char*)GSM_RX_Buff, "?102");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-//												strcpy((char*)GSM_RX_Buff, "?106");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-//												strcpy((char*)GSM_RX_Buff, "?101");
-//            MainSmsParsing((char*)GSM_RX_Buff);
-          }
         }
 
-        /* ------------- BIG block SMS and Net state END --------------------- */
         if (gregTim.Elapsed())
         {
           DBG_Gsm("[gsm] register time out\n");
@@ -428,14 +359,14 @@ void tskGsm(void*)
       /* -++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
       case (eG_TryConnect):
       {
-        m66.Connect(ssrv[0], ssrv[1]);
+        m66.Connect(netConf[0], netConf[1], netConf[2]);
 
         if (m66.State == kConnected)
         {
           /// connected successful
-          sessTim.Start(1000 * 10 * currgprs->bigto);
-          igsmTim.Start(1000 * 20); /* break time out */
-          failTim.Start(1000 * 10 * currgprs->silentto); /* global stop timeout */
+          sessTim.Start(1000 * servP->tim.Big);
+          igsmTim.Start(1000 * 20);
+          failTim.Start(1000 * servP->tim.Silent);
           g_GsmMainState = eG_ConnIdle;
           break;
         }
@@ -476,7 +407,7 @@ void tskGsm(void*)
           if (igsmTim.Ticks() < 5000)
             igsmTim.Start(1000 * 5);
 
-          failTim.Start(1000 * 10 * currgprs->silentto);
+          failTim.Start(1000 * servP->tim.Silent);
           rigRouter.PassRigFrame((const RigFrame*)GSM_RX_Buff, ret);
         }
 
@@ -487,7 +418,7 @@ void tskGsm(void*)
       case (eG_Disconnect):
       {
         m66.CloseConnection();
-        sessTim.Start(1000 * 10 * currgprs->reconnto);
+        sessTim.Start(1000 * servP->tim.ReConnect);
         g_GsmMainState = (eG_Init);
         break;
       }

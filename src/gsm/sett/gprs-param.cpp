@@ -31,7 +31,7 @@ int32_t GprsParam::Parse(const SmsChunkDescriptor& dsc)
 
 int32_t GprsParam::Print(char* str)
 {
-  std::sprintf(str, "Serv > %s,%s,%s. Tim > %d,%d,%d\n", serv.GetParametr(kServer),
+  std::sprintf(str, "Serv:%s,%s,%s. Tim > %d,%d,%d. ", serv.GetParametr(kServer),
                serv.GetParametr(kPort), serv.GetParametr(kAPN),
                tim.Big, tim.Silent, tim.ReConnect);
   return std::strlen(str);

@@ -7,7 +7,9 @@ class SmsChunkDescriptor;
 
 class GprsParam {
  public:
-  GprsParam() {}
+  GprsParam() {
+    Default();
+  }
   void Default();
   int32_t Parse(const SmsChunkDescriptor& dsc);
   int32_t Print(char* str);
