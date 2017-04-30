@@ -18,6 +18,7 @@
 #include "configs/free-rtos-def.h"
 #include "factory/switch-maker.h"
 #include "factory/pipes-maker.h"
+#include "gsm/sms-chunks.h"
 
 using namespace Timers;
 using namespace MAGIC;
@@ -360,12 +361,19 @@ ITrekList* FileLink()
 }
 
 
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-int32_t PrintYandexLink(char* inb, uint16_t inblen)
+void Start_GpsThread()
+{
+  xTaskCreate(tskGps, "tskGps", kLowStackSz, (void*)NULL, kPrio_IDLE, NULL);
+}
+
+
+uint8_t GetIntegerGPSState()
+{
+  return trackinst.Get();
+}
+
+/* ---------------------------------------------------------------------------- */
+int32_t PrintYandexLink(char* inb)
 {
 //  if (scoor.Valid())
   if (true)
@@ -387,7 +395,7 @@ int32_t PrintYandexLink(char* inb, uint16_t inblen)
   return strlen(inb);
 }
 /* */
-int32_t PrintGoogleLink(char* inb, uint16_t inblen)
+int32_t PrintGoogleLink(char* inb)
 {
   sprintf(inb,
           "https://www.google.ru/maps/place//@%d.%06d,%d.%06d,16z/data=!4m2!3m1!1s0x0:0x0?hl=ru",
@@ -399,7 +407,7 @@ int32_t PrintGoogleLink(char* inb, uint16_t inblen)
 }
 
 /*   */
-int32_t PrintTextLink(char* inb, uint16_t inblen)
+int32_t PrintTextLink(char* inb)
 {
   if (true)
   {
@@ -421,13 +429,37 @@ int32_t PrintTextLink(char* inb, uint16_t inblen)
 }
 
 
-void Start_GpsThread()
+int32_t MapHandler(const SmsChunkDescriptor& smsdsc, char* ans)
 {
-  xTaskCreate(tskGps, "tskGps", kLowStackSz, (void*)NULL, kPrio_IDLE, NULL);
+  if ((smsdsc.desc[0].len < 2) && (smsdsc.desc[0].text[0] != '0'))
+  {
+    // not handling
+    return 0;
+  }
+
+  int32_t map_selector = smsdsc.desc[0].text[2] - '0';
+  int32_t ret;
+
+  switch (map_selector)
+  {
+    case (1):
+      ret = PrintYandexLink(ans);
+      break;
+
+    case (2):
+      ret = PrintGoogleLink(ans);
+      break;
+
+    case (3):
+      ret = PrintTextLink(ans);
+      break;
+
+    default:
+      sprintf(ans, "Nevernyi zapros pozicii");
+      ret = strlen(ans);
+      break;
+  }
+  
+  return ret;
 }
 
-
-uint8_t GetIntegerGPSState()
-{
-  return trackinst.Get();
-}

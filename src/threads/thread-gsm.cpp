@@ -24,10 +24,6 @@
 using namespace M66;
 using namespace Timers;
 
-int32_t PrintYandexLink(char* inb, uint16_t inblen);
-int32_t PrintGoogleLink(char* inb, uint16_t inblen);
-int32_t PrintTextLink(char* inb, uint16_t inblen);
-
 static Timer sessTim;
 static Timer igsmTim;
 static Timer gregTim;
@@ -119,12 +115,6 @@ void GsmSwitchOn(void)
 }
 
 
-int32_t MapHandler(const SmsChunkDescriptor& smsdsc, char* ans)
-{
-  return 0;
-}
-
-
 int32_t JConfSocketUpdate()
 {
   int32_t socket_id = memconf.sockbit.Socket();
@@ -173,6 +163,7 @@ int32_t GprsHandler(const SmsChunkDescriptor& smsdsc, char* ans)
 /* ------------------------------------------------------------------------- */
 void JConfInit()
 {
+  extern int32_t MapHandler(const SmsChunkDescriptor&, char*);
   int32_t conf_len = memconf.Lenght();
   JConfUpload((uint8_t*)&memconf, conf_len);
 
