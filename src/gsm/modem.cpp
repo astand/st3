@@ -214,6 +214,9 @@ int32_t GsmModem::Connect(const char* ip, const char* port, const char* apn,
 
 int32_t GsmModem::CloseConnection()
 {
+  if (mdmstate_ == kConnected)
+    Suspend_QI();
+
   Close_QI();
   return 0;
 }
@@ -324,6 +327,7 @@ void GsmModem::Connect_QI(const char* ip, const char* port)
 
 void GsmModem::Close_QI()
 {
+  mdmstate_ = kRegOk;
   Send("AT+QICLOSE\r\n");
   AtResponse("CLOSE OK", "ERROR", 5 * 1000);
   Send("AT+QISTATE\r\n");

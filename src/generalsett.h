@@ -22,7 +22,7 @@ class SocketBits_c {
 class GeneralSett {
   static const uint8_t TCP_NUMS = 5;
   static const uint16_t ID_LENGHT = 64;
-  static const uint32_t CURRENT_SIGN = 0x0700032;
+  static const uint32_t CURRENT_SIGN = 0x0700132;
  public:
   uint32_t SIGN;
   char ID[ID_LENGHT];

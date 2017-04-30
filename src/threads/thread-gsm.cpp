@@ -122,7 +122,7 @@ int32_t JConfSocketUpdate()
   netConf[0] = servP->serv.GetParametr(kServer);
   netConf[1] = servP->serv.GetParametr(kPort);
   netConf[2] = servP->serv.GetParametr(kAPN);
-  sessTim.Start(1000 * 10 * 1);
+  sessTim.Start(1000 * 10);
   return 0;
 }
 
@@ -146,8 +146,16 @@ int32_t GprsHandler(const SmsChunkDescriptor& smsdsc, char* ans)
   {
     memconf.SocketBits(smsdsc.desc[1].text);
     int32_t socket = memconf.sockbit.Socket();
-    memconf.gprs[socket - 1].Print(ans);
-    sprintf((ans + strlen(ans)), " S:%d", socket);
+
+    if (socket != 0)
+    {
+      memconf.gprs[socket - 1].Print(ans);
+      sprintf((ans + strlen(ans)), " S:%d", socket);
+    }
+    else
+    {
+      sprintf(ans, " GPRS vyklychen.");
+    }
   }
   else
   {
@@ -230,8 +238,7 @@ bool IsReadyForConnect()
 
     if (servP == 0)
       ret = false;
-
-    if (m66.State == kRegOk && servP->serv.ServerValid())
+    else if (m66.State == kRegOk && servP->serv.ServerValid())
       ret = true;
   }
 
@@ -305,8 +312,6 @@ void tskGsm(void*)
                              (time_register_wait + (NET_REG_SEC_TIMEOUT * 2)) : (360);
         gregTim.Start(1000 * time_register_wait);
         g_GsmMainState = (firm_inst.res) ? eG_HardDie : eG_Idle;
-//        SmsHandler("#G01#192.168.1.1#30303#internet.mts.ru", 50, (char*)GSM_TX_Buff);
-//        SmsHandler("#G00#1", 6, (char*)GSM_TX_Buff);
         break;
       }
 
