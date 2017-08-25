@@ -6,8 +6,11 @@
 #include "threads/rtos-init.h"
 #include "hdwr/hw-init.h"
 
+extern void BootFlash();
+
 int main (void)
 {
+  BootFlash();
   SysTickInit();
   AllHwInit();
   StartUserThreads();

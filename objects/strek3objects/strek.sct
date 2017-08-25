@@ -12,7 +12,7 @@ LR_IROM1 0x08000000 0x00020000  {    ; load region size_region
    .ANY (+RW +ZI)
   }
   RW_IRAM2 0x2000FC00 0x00000400  {
-    KillFlash.o (+RO)
+    boot-flash.o (+RO)
    .ANY (+RW +ZI)
   }
 }

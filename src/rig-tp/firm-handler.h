@@ -15,4 +15,5 @@ class FirmHandler : public AWriteHandler {
 
  private:
   OnLoadedCallback callback;
+  bool is_firm_fail;
 };

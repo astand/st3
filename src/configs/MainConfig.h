@@ -60,14 +60,16 @@ extern uint32_t pindrlink;
 /* ------------------------------------------------------------------------- *
  *  Start main Flash Memory
  * ------------------------------------------------------------------------- */
-#define MCU_FULL_MEMORY_START      0x08000000
+#define MCU_MEMORY_START            0x08000000U
+#define MCU_MEMORY_SIZE		          0x20000U   /* 128 kB */
+#define __MCU_MEMORY_END            (MCU_MEMORY_START + MCU_MEMORY_SIZE)
 
 /* ------------------------------------------------------------------------- *
  *   Full MCU memory size select
  * ------------------------------------------------------------------------- */
-#define MCU_FULL_MEMORY_SIZE		    0x80000   /* 512 kB */
-
-
+#define BOOT_FIRMWARE_ADDRESS       (MCU_MEMORY_START + 0x10000U)
+#define BOOT_FIRMWARE_SIZE          (0xFFE0U)
+#define BOOT_KEY_ADDRESS            (__MCU_MEMORY_END - 32U)
 /* ------------------------------------------------------------------------- *
  *   Full size of function that will be kill main flash sector
  * ------------------------------------------------------------------------- */
@@ -83,7 +85,7 @@ extern uint32_t pindrlink;
  *   Calculation BASE adrress for killflash function (see in *.sct file)
  * ------------------------------------------------------------------------- */
 #define KILL_FLASH_BASE_ADDR		    \
-  ((MCU_FULL_MEMORY_START + MCU_FULL_MEMORY_SIZE) - KILL_FLASH_MEMORY_SIZE)
+  ((MCU_MEMORY_START + MCU_MEMORY_SIZE) - KILL_FLASH_MEMORY_SIZE)
 
 /* ------------------------------------------------------------------------- *
  *   Calculation BASE adrress for CONFIG
@@ -101,7 +103,7 @@ extern uint32_t pindrlink;
  *   Base address for saving new firmware kill main flash sector
  * ------------------------------------------------------------------------- */
 #define START_SAVE_ADDR 	          \
-  ((MCU_FULL_MEMORY_SIZE/2)+MCU_FULL_MEMORY_START)
+  ((MCU_MEMORY_SIZE/2)+MCU_MEMORY_START)
 
 /* ------------------------------------------------------------------------- *
  *   Base address for saving new firmware kill main flash sector
