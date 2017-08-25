@@ -12,17 +12,6 @@ extern "C" {
 #include <stdlib.h>
 #include "stm32f4xx.h"
 
-
-
-/* ------------------------------------------------------------------------- *
- * Main clock value for calculate timing values
- * ------------------------------------------------------------------------- */
-#define SYSCLK_MAIN 84000000
-/* ------------------------------------------------------------------------- *
- *  Timers base koeff for timeout handler
- * ------------------------------------------------------------------------- */
-#define BLINK_TASK_ITV_VALUE     100
-
 /* ------------------------------------------------------------------------- *
  *  Macros for hardware access, both direct and via the bit-band region.
  * ------------------------------------------------------------------------- */
@@ -48,18 +37,7 @@ extern "C" {
 
 /* extern for using raw adc buffer in charge control thread */
 extern __IO uint16_t dma_adc_raw[];
-extern uint32_t pindrlink;
-/* ------------------------------------------------------------------------- *
- *
- *
- *                           Flash memory MAP
- *
- *
- * ------------------------------------------------------------------------- */
 
-/* ------------------------------------------------------------------------- *
- *  Start main Flash Memory
- * ------------------------------------------------------------------------- */
 #define MCU_MEMORY_START            0x08000000U
 #define MCU_MEMORY_SIZE		          0x20000U   /* 128 kB */
 #define __MCU_MEMORY_END            (MCU_MEMORY_START + MCU_MEMORY_SIZE)
@@ -70,67 +48,7 @@ extern uint32_t pindrlink;
 #define BOOT_FIRMWARE_ADDRESS       (MCU_MEMORY_START + 0x10000U)
 #define BOOT_FIRMWARE_SIZE          (0xFFE0U)
 #define BOOT_KEY_ADDRESS            (__MCU_MEMORY_END - 32U)
-/* ------------------------------------------------------------------------- *
- *   Full size of function that will be kill main flash sector
- * ------------------------------------------------------------------------- */
-#define KILL_FLASH_MEMORY_SIZE	    0x800   /* 2kB*/
 
-/* ------------------------------------------------------------------------- *
- * Full size of memory sector that will be contain
- * all system non volatile settings
- * ------------------------------------------------------------------------- */
-#define CONFIG_MEMORY_SIZE			    0x1000	/* 4 kB*/
-
-/* ------------------------------------------------------------------------- *
- *   Calculation BASE adrress for killflash function (see in *.sct file)
- * ------------------------------------------------------------------------- */
-#define KILL_FLASH_BASE_ADDR		    \
-  ((MCU_MEMORY_START + MCU_MEMORY_SIZE) - KILL_FLASH_MEMORY_SIZE)
-
-/* ------------------------------------------------------------------------- *
- *   Calculation BASE adrress for CONFIG
- * ------------------------------------------------------------------------- */
-#define CONFIG_START_ADRESS			  \
-  (KILL_FLASH_BASE_ADDR -	CONFIG_MEMORY_SIZE)
-
-/* ------------------------------------------------------------------------- *
- *   Page for btn status saving
- * ------------------------------------------------------------------------- */
-#define BTN_START_ADDRESS          \
-  (CONFIG_START_ADRESS - MCU_FLASH_PAGE_SIZE)
-
-/* ------------------------------------------------------------------------- *
- *   Base address for saving new firmware kill main flash sector
- * ------------------------------------------------------------------------- */
-#define START_SAVE_ADDR 	          \
-  ((MCU_MEMORY_SIZE/2)+MCU_MEMORY_START)
-
-/* ------------------------------------------------------------------------- *
- *   Base address for saving new firmware kill main flash sector
- * ------------------------------------------------------------------------- */
-#define FIRM_MAX_SIZE							0x10000 /* 64 kB */
-
-/* ------------------------------------------------------------------------- *
- *   Page size for erase operation
- * ------------------------------------------------------------------------- */
-#define MCU_FLASH_PAGE_SIZE        0x800 /* 2 kB */
-
-/* ------------------------------------------------------------------------- *
- *
- *
- *                          End flash memory MAP
- *
- *
- * ------------------------------------------------------------------------- */
-#define 	RAMGCONF 	0x20004000
-#define  	RAMBTN 		(RAMGCONF + 4096)
-/* ------------------------------------------------------------------------- *
- *  ror operation
- * ------------------------------------------------------------------------- */
-#define ROR32(x)  (x = __ror(x,1))
-#define DEADLOOP    while(1)
-extern void KillFlash(void);
-extern void dummy(void);
 #ifdef __cplusplus
 }
 #endif
