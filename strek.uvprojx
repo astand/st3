@@ -912,6 +912,11 @@
               <FileType>8</FileType>
               <FilePath>.\src\trekrep\noteindex.cpp</FilePath>
             </File>
+            <File>
+              <FileName>cached-trek.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\trekrep\cached-trek.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
