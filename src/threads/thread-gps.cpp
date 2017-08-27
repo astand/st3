@@ -25,7 +25,7 @@
 using namespace Timers;
 using namespace MAGIC;
 
-static const int32_t CACHE_STOP_TIMEOUT = 20 * 1000;
+static const int32_t CACHE_STOP_TIMEOUT = 10 * 1000;
 
 Navi scoor;
 NaviNote trekNote;
@@ -295,38 +295,37 @@ void NMEA_Parse(int32_t len)
  * ------------------------------------------------------------------------- */
 void tskGps(void*)
 {
-//	uint32_t addr;
   int32_t ret;
-//  track_saver.Init();
-//  gps_en.on();
-//  while(1)
-//    os_tsk_pass();
-//  for (uint32_t addr = 0; addr < 500; addr ++)
-//  {
-//    os_tsk_pass();
-//		fiend.EraseSec(addr * 4096);
-//  }
-////  track_saver.id = 0xa4;
-//  fiend.Write(track_saver.address, (uint8_t*) & (track_saver), 4);
-//  fiend.Read(track_saver.address, spbuf, mxmap::step);
-//  DBG_Gps("start read\n");
-//  for (int i = 0; i < 4096 * 500; i+=mxmap::step)
-//  {
-//    fiend.Read(i, spbuf, mxmap::step);
-//  }
-//  DBG_Gps("stop read\n");
-//  PrintAllIDs();
-  
+  // uint32_t addr;
+  // track_saver.Init();
+  // gps_en.on();
+  // while (1)
+  //   os_tsk_pass();
+  // for (uint32_t addr = 0; addr < 500; addr ++)
+  // {
+  //   os_tsk_pass();
+  //   fiend.EraseSec(addr * 4096);
+  // }
+  // track_saver.id = 0xa4;
+  // fiend.Write(track_saver.address, (uint8_t*) & (track_saver), 4);
+  // fiend.Read(track_saver.address, spbuf, mxmap::step);
+  // DBG_Gps("start read\n");
+  // for (int i = 0; i < 4096 * 500; i += mxmap::step)
+  // {
+  //   fiend.Read(i, spbuf, mxmap::step);
+  // }
+  // DBG_Gps("stop read\n");
+  // PrintAllIDs();
   // start cache timer in continious mode
   cacheStopTim.Start(CACHE_STOP_TIMEOUT, true);
   dbgTim.Start(1000);
-//  MEM_SaveAddress();
+  // MEM_SaveAddress();
   treksaver.Init();
   treklist.RefreshTrekList();
   treklist.ReadLastNote(storechunk);
   scoor.InitFromRestored();
-//  FileListNotification();
-//  DBG_Common("end %d\n", track_saver.address);
+  // FileListNotification();
+  // DBG_Common("end %d\n", track_saver.address);
 
   /* test for flash writing */
   if (false)
@@ -356,7 +355,7 @@ void tskGps(void*)
       NMEA_Parse(ret);
 
     /* ??? need new timing base algoritm */
-//		OutProcess();
+    // OutProcess();
     TrackProcess();
     osPass();
   }
@@ -471,4 +470,3 @@ int32_t MapHandler(const SmsChunkDescriptor& smsdsc, char* ans)
 
   return ret;
 }
-
