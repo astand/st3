@@ -9,8 +9,10 @@
 #include "thread-gps.h"
 #include "nmeautil/nmeautil.hpp"
 #include "trekrep/trek-location-descriptor.h"
+#include "trekrep/cached-trek.h"
 #include "equip/flash/mx-25-driver.h"
 #include "utility/timers/timer.h"
+#include "utility/timers/d-timer.h"
 #include "oldcommon/magic/magic.h"
 #include "trekrep/treksaver.h"
 #include "trekrep/treklist.h"
@@ -23,14 +25,19 @@
 using namespace Timers;
 using namespace MAGIC;
 
+static const int32_t CACHE_STOP_TIMEOUT = 10 * 1000;
+
 Navi scoor;
+NaviNote trekNote;
 IFlashStorable& storechunk = (IFlashStorable&)scoor;
 ISwitchable& gps_en = SwitchMaker::GetGpsEn();
+CachedTrek cachedTrek;
 char gpssens[80];
 static uint8_t spbuf[64];
 static uint16_t* const track_num = (uint16_t*)(spbuf + 2);
 
-static Timer agpsTim(1000, true);
+// time out for stop point update action
+static DTimers::Timer cacheStopTim;
 static Timer dbgTim(1000, true);
 static Timer waitmovTim(1000, false);
 static const uint32_t DEDUG_TO = (120 * 1000);
@@ -176,6 +183,8 @@ void TrackProcess()
         ANaviPrint(dbgbuf, scoor);
         DBG_2Gps("%s\n", dbgbuf);
         treksaver.SaveNote(storechunk);
+        cacheStopTim.Start(CACHE_STOP_TIMEOUT);
+        cachedTrek.Add(scoor);
       }
 
       if (!scoor.mvdetector.IsMovement())
@@ -286,36 +295,37 @@ void NMEA_Parse(int32_t len)
  * ------------------------------------------------------------------------- */
 void tskGps(void*)
 {
-//	uint32_t addr;
   int32_t ret;
-//  track_saver.Init();
-//  gps_en.on();
-//  while(1)
-//    os_tsk_pass();
-//  for (uint32_t addr = 0; addr < 500; addr ++)
-//  {
-//    os_tsk_pass();
-//		fiend.EraseSec(addr * 4096);
-//  }
-////  track_saver.id = 0xa4;
-//  fiend.Write(track_saver.address, (uint8_t*) & (track_saver), 4);
-//  fiend.Read(track_saver.address, spbuf, mxmap::step);
-//  DBG_Gps("start read\n");
-//  for (int i = 0; i < 4096 * 500; i+=mxmap::step)
-//  {
-//    fiend.Read(i, spbuf, mxmap::step);
-//  }
-//  DBG_Gps("stop read\n");
-//  PrintAllIDs();
-  agpsTim.Start(10000);
+  // uint32_t addr;
+  // track_saver.Init();
+  // gps_en.on();
+  // while (1)
+  //   os_tsk_pass();
+  // for (uint32_t addr = 0; addr < 500; addr ++)
+  // {
+  //   os_tsk_pass();
+  //   fiend.EraseSec(addr * 4096);
+  // }
+  // track_saver.id = 0xa4;
+  // fiend.Write(track_saver.address, (uint8_t*) & (track_saver), 4);
+  // fiend.Read(track_saver.address, spbuf, mxmap::step);
+  // DBG_Gps("start read\n");
+  // for (int i = 0; i < 4096 * 500; i += mxmap::step)
+  // {
+  //   fiend.Read(i, spbuf, mxmap::step);
+  // }
+  // DBG_Gps("stop read\n");
+  // PrintAllIDs();
+  // start cache timer in continious mode
+  cacheStopTim.Start(CACHE_STOP_TIMEOUT, true);
   dbgTim.Start(1000);
-//  MEM_SaveAddress();
+  // MEM_SaveAddress();
   treksaver.Init();
   treklist.RefreshTrekList();
   treklist.ReadLastNote(storechunk);
   scoor.InitFromRestored();
-//  FileListNotification();
-//  DBG_Common("end %d\n", track_saver.address);
+  // FileListNotification();
+  // DBG_Common("end %d\n", track_saver.address);
 
   /* test for flash writing */
   if (false)
@@ -333,21 +343,19 @@ void tskGps(void*)
     trackinst.st0 = eTestWriting;
   }
 
+  cachedTrek.Add(scoor);
+
   while (1)
   {
     // if (GetTim(agps_to) == 0)
-    if (agpsTim.Elapsed())
-    {
-      /* ??? test for power consumption measurement */
-//      gps_en.Off();
-      // agpsTim.Start(10000);
-    }
+    if (cacheStopTim.Elapsed() && trackinst.st0 != eMove)
+      cachedTrek.Add(scoor);
 
     if ((ret = NMEA_Check((uint8_t*)gpssens)) > 0)
       NMEA_Parse(ret);
 
     /* ??? need new timing base algoritm */
-//		OutProcess();
+    // OutProcess();
     TrackProcess();
     osPass();
   }
@@ -459,7 +467,6 @@ int32_t MapHandler(const SmsChunkDescriptor& smsdsc, char* ans)
       ret = strlen(ans);
       break;
   }
-  
+
   return ret;
 }
-
