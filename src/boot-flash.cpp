@@ -89,12 +89,6 @@ void BootFlash()
       ;
 
     FLASH->CR &= (~FLASH_CR_PG);
-
-    if (HWREG(MCU_MEMORY_START + addr) != wrword)
-    {
-      // write operation invalid - start it again
-      HARDRESRET;
-    }
   }
 
   // boot programming ends successfully - clear boot firmware region
@@ -108,6 +102,9 @@ void BootFlash()
   FLASH->CR &= (~FLASH_CR_SER);
   FLASH->CR &= SECTOR_MASK;
   FLASH->CR |= FLASH_CR_LOCK;
+
+  for (volatile int i = 0; i < 1000; i++);
+
   HARDRESRET;
 }
 
