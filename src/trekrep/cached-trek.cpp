@@ -13,9 +13,9 @@ CachedTrek::CachedTrek()
 
 int32_t CachedTrek::Add(const NaviNote& item)
 {
-  head_ = (head_ + 1) % kCacheSize;
   // copy new item
   notes_[head_] = item;
+  head_ = (head_ + 1) % kCacheSize;
   loaded_cnt_ = (loaded_cnt_ >= kCacheSize) ? loaded_cnt_ : loaded_cnt_ + 1;
   return 1;
 }
@@ -29,7 +29,7 @@ int32_t CachedTrek::UpLoad(uint8_t* mem, int32_t maxsize)
     return ret;
 
   // get tail index for start uploading from it
-  int32_t tail_ = (head_ + 10 - (loaded_cnt_ - 1)) % kCacheSize;
+  int32_t tail_ = (head_ + 10 - (loaded_cnt_)) % kCacheSize;
 
   for (int32_t i = 0; i < loaded_cnt_; i++)
   {
