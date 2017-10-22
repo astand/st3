@@ -7,6 +7,7 @@
 #include "rtos-init.h"
 #include "rig-tp/rig-inc.h"
 #include "utility/timers/timer.h"
+#include "utility/timers/d-timer.h"
 #include "factory/modem-maker.h"
 #include "factory/bin-maker.h"
 #include "factory/services-factory.h"
@@ -28,7 +29,7 @@ static Timer sessTim;
 static Timer igsmTim;
 static Timer gregTim;
 static Timer failTim;
-
+DTimers::Timer resettimer;
 
 static IStreamable& binPipe = GetBinPipe();
 int32_t JConfSocketUpdate();
@@ -279,12 +280,18 @@ void tskGsm(void*)
   g_GsmMainState = eG_Start;
   JConfInit();
   RigStuffInit();
+  resettimer.Start(1000 * 60 * 60 * 24);
 
   /*------------------------------------------*/
   while (1)     /* deadloop for GSM task */
   {
     m66DCDHandle();
     osPass(); /* main task pass */
+
+    if (resettimer.Elapsed())
+    {
+      g_GsmMainState = eG_Start;
+    }
 
     switch (g_GsmMainState)
     {
