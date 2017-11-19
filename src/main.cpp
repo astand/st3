@@ -10,7 +10,6 @@ extern void BootFlash();
 
 int main (void)
 {
-  BootFlash();
   SysTickInit();
   AllHwInit();
   StartUserThreads();

@@ -51,7 +51,7 @@ int32_t FirmHandler::UserIncomeData(const RigFrame* in, int32_t dataSize)
       {
         // Place mark for indecating
         // that firmware was loaded successfully
-        FLASH_ProgramWord(BOOT_KEY_ADDRESS, 0x5dacbeef);
+        FLASH_ProgramWord(BOOT_KEY_ADDRESS, 0xdeadbeef);
         callback(fileSize);
       }
     }

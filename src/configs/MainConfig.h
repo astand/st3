@@ -47,7 +47,7 @@ extern __IO uint16_t dma_adc_raw[];
  * ------------------------------------------------------------------------- */
 #define BOOT_FIRMWARE_ADDRESS       (MCU_MEMORY_START + 0x10000U)
 #define BOOT_FIRMWARE_SIZE          (0xFFE0U)
-#define BOOT_KEY_ADDRESS            (__MCU_MEMORY_END - 32U)
+#define BOOT_KEY_ADDRESS            (__MCU_MEMORY_END - 128)
 
 #ifdef __cplusplus
 }
