@@ -49,7 +49,8 @@ typedef enum
   eWaitmove = 1,
   eMove = 2,
   eMovesuspend = 3,
-  eTestWriting = 4
+  eTestWriting = 4,
+  eNoGpsSensor = 5
 
 } TrackState_e;
 
@@ -344,6 +345,8 @@ void tskGps(void*)
   }
 
   cachedTrek.Add(scoor);
+  trackinst.st0 = eNoGpsSensor;
+  osDelay(1000);
 
   while (1)
   {
@@ -352,7 +355,10 @@ void tskGps(void*)
       cachedTrek.Add(scoor);
 
     if ((ret = NMEA_Check((uint8_t*)gpssens)) > 0)
+    {
       NMEA_Parse(ret);
+      trackinst.st0 = eNotvalid;
+    }
 
     /* ??? need new timing base algoritm */
     // OutProcess();
