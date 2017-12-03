@@ -4,7 +4,7 @@
 
 class SwitchMaker {
  public:
-  static ISwitchable& GetLed1();
+  static ISwitchable& GetGsmLedBlinker();
   static ISwitchable& GetLed2();
 
   static ISwitchable& GetGsmEn();

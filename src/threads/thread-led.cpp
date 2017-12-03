@@ -29,7 +29,7 @@ static uint32_t led2_pallete[7] =
 };
 void Led1SchedulingProcess()
 {
-  static ISwitchable& led1 = SwitchMaker::GetLed1();
+  static ISwitchable& led1 = SwitchMaker::GetGsmLedBlinker();
   int32_t id = GetIntegerModemState();
   led1_pallete[id] = __ror(led1_pallete[id], 1);
   led1.off();

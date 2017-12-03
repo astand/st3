@@ -5,7 +5,8 @@
 
 typedef enum
 {
-  kLed1 = 0,
+  kLed11 = 0,
+  kLed1,
   kLed2,
   kEnGSM,
   kEnGPS,

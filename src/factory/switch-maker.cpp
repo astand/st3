@@ -1,12 +1,26 @@
 #include "switch-maker.h"
 #include "utility/bridge/inc/gpio-hal.h"
 #include "hdwr/controls/pins-definition.h"
+#include "multiled/multiled.h"
 
-ISwitchable& SwitchMaker::GetLed1()
+
+ISwitchable& SwitchMaker::GetGsmLedBlinker()
 {
   static PinDescriptor const* dsc_ = GetDescriptor(kLed1);
   static PortHal ph_(dsc_->port, dsc_->pin_num, dsc_->reverse);
-  return ph_;
+  static PinDescriptor const* dsc2_ = GetDescriptor(kLed11);
+  static PortHal ph2_(dsc2_->port, dsc2_->pin_num, dsc2_->reverse);
+  static bool isbound = false;
+  static MultiLed mled;
+
+  if (!isbound)
+  {
+    isbound = true;
+    mled.Add(&ph_);
+    mled.Add(&ph2_);
+  }
+
+  return mled;
 }
 
 
@@ -56,13 +70,3 @@ ISwitchable& SwitchMaker::GetDCDSignal()
   static PortHal ph_(dsc_->port, dsc_->pin_num, dsc_->reverse);
   return ph_;
 }
-
-
-// ISwitchable& SwitchMaker::GetLed1()
-// {
-//   static PinDescriptor const* dsc_ = GetDescriptor(kLed1);
-//   static PortHal ph_(dsc_->port, dsc_->pin_num, dsc_->reverse);
-
-//   return ph_;
-// }
-

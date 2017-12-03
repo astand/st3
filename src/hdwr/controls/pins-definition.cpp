@@ -12,7 +12,8 @@ const PinConfiguraion* GetConfiguration(DescriptorName index)
 {
   static const PinConfiguraion pin_collection[kMaxPinsCount] =
   {
-    { { GPIOC, 0,   true }, { kPushPull, kNone },  GPIO_Speed_25MHz }, /* Led 1 */
+    { { GPIOA, 11,  true }, { kPushPull, kNone },  GPIO_Speed_25MHz }, /* Led 11 */
+    { { GPIOC, 0,   true }, { kPushPull, kNone },  GPIO_Speed_25MHz }, /* Led 1*/
     { { GPIOA, 5,   true }, { kPushPull, kNone },  GPIO_Speed_25MHz }, /* Led 2 */
     { { GPIOC, 13,  true  }, { kPushPull, kNone },  GPIO_Speed_25MHz }, /* Enable GSM */
     { { GPIOB, 1,   true  }, { kPushPull, kNone },  GPIO_Speed_25MHz }, /* Enable GPS */
