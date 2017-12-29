@@ -827,6 +827,11 @@
               <FileType>8</FileType>
               <FilePath>.\src\nmeautil\speedsnaper.cpp</FilePath>
             </File>
+            <File>
+              <FileName>gps-positioner.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\nmeautil\gps-positioner.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
