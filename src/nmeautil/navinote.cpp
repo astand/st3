@@ -15,7 +15,7 @@ void Navi::InitFromRestored()
 
 void Navi::HandleGpsData(GpsPositionData_t* data)
 {
-  if (data->update & kValidUpdateMask != 0)
+  if (data->update != kNoUpdate)
   {
     if (data->update == kSpeed)
     {
@@ -39,12 +39,6 @@ void Navi::FreezeDistance()
 {
   /// distance for saving to memory LSB 1m
   accum_dist = (uint32_t)(intermediate_dist * 1000);
-}
-
-/* ------------------------------------------------------------------------- */
-bool Navi::Valid()
-{
-  return rmcvalid;
 }
 
 /* ------------------------------------------------------------------------- *

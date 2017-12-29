@@ -105,5 +105,4 @@ class Navi : public NaviNote, public  IFlashStorable {
   int32_t CoerseChanged();
   void FreezeFixSpd();
   void FreezeDistance();
-  bool Valid();
 };

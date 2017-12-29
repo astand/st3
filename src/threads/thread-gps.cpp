@@ -108,7 +108,7 @@ void TrackProcess()
   switch (trackinst.st0)
   {
     case (kPositionNotValid):
-      if (scoor.Valid())
+      if (gpsdata.sensor == kValidPostion)
       {
         DBG_2Gps("[GPS2]Valid RMC detect --> goto waitmove\n");
         trackinst.st0 = kWaitMove;
@@ -317,7 +317,6 @@ uint8_t GetIntegerGPSState()
 /* ---------------------------------------------------------------------------- */
 int32_t PrintYandexLink(char* inb)
 {
-//  if (scoor.Valid())
   if (true)
   {
     sprintf(inb,
