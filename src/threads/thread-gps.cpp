@@ -47,12 +47,12 @@ static char dbgbuf[256];
 
 typedef enum
 {
-  kPositionNotValid = 0,
+  kNotFixed = 0,
   kWaitMove = 1,
   kMoving = 2,
   kMovePaused = 3,
   kTestWriting = 4,
-  kNoGpsSensor = 5
+  kNoNavData = 5
 } TrackState_e;
 
 struct
@@ -61,7 +61,7 @@ struct
   uint8_t Get() {
     return (uint8_t)st0;
   }
-} trackinst = {kPositionNotValid};
+} trackinst = {kNotFixed};
 
 
 IFlashMemory& fiend = PipesMaker::GetFlashMemory();
@@ -107,7 +107,7 @@ void TrackProcess()
 {
   switch (trackinst.st0)
   {
-    case (kPositionNotValid):
+    case (kNotFixed):
       if (gpsdata.sensor == kValidPostion)
       {
         DBG_2Gps("[GPS2]Valid RMC detect --> goto waitmove\n");
@@ -122,6 +122,11 @@ void TrackProcess()
         DBG_2Gps("[GPS2]move is detected --> goto MOVE\n");
         treksaver.StartNewNote();
         trackinst.st0 = kMoving;
+      }
+
+      if (gpsdata.sensor == kNotValidPosition)
+      {
+        trackinst.st0 = kNotFixed;
       }
 
       break;
@@ -153,14 +158,14 @@ void TrackProcess()
       if (scoor.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]move is restored --> goto MOVE\n");
-        trackinst.st0 = kMovePaused;
+        trackinst.st0 = kMoving;
       }
 
       if (waitmovTim.Elapsed())
       {
         /* new ID */
         DBG_2Gps("[GPS2]time is run out --> Start full\n");
-        trackinst.st0 = kPositionNotValid;
+        trackinst.st0 = kNotFixed;
       }
 
       break;
@@ -176,6 +181,14 @@ void TrackProcess()
         treksaver.SaveNote(storechunk);
         ANaviPrint(dbgbuf, scoor);
         DBG_2Gps(dbgbuf);
+      }
+
+      break;
+
+    case (kNoNavData):
+      if (gpsdata.sensor != kNoSensor)
+      {
+        trackinst.st0 = kNotFixed;
       }
 
       break;
@@ -266,7 +279,7 @@ void tskGps(void*)
   }
 
   cachedTrek.Add(scoor);
-  trackinst.st0 = kNoGpsSensor;
+  trackinst.st0 = kNoNavData;
   osDelay(1000);
 
   while (1)
@@ -281,10 +294,10 @@ void tskGps(void*)
     {
       scoor.HandleGpsData(&gpsdata);
 
-      if (trackinst.st0 == kNoGpsSensor)
+      if (trackinst.st0 == kNoNavData)
       {
         // change NoSensor status only one time
-        trackinst.st0 = kPositionNotValid;
+        trackinst.st0 = kNotFixed;
       }
     }
 

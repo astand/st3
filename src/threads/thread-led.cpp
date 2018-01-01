@@ -21,9 +21,9 @@ static uint32_t led1_pallete[7] =
 static uint32_t led2_pallete[7] =
 {
   0x01,        /* Not valid GPS */
-  0x10001,     /* GPS valid anm moving wait*/
+  0x01FFFF00,     /* GPS valid anm moving wait*/
   0x33333333,  /* Moving */
-  0xFFF,       /* Move suspended */
+  0x50505050,       /* Move suspended */
   0xFFFFffff,  /* No GPS sensor */
   0xFFFFffff   /* No GPS sensor */
 };
