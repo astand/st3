@@ -1,9 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include "navinote.hpp"
+#include "navinote.h"
 #include "nmea-string-reader.h"
-#include "navinote.hpp"
 
 class GpsPositioner {
  public:

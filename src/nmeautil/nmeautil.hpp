@@ -4,7 +4,7 @@
 // #include <stdint.h>
 #include <stdio.h>
 // #include "str0.h"
-#include "navinote.hpp"
+#include "navinote.h"
 
 //#define _TEMP_NAVI_LENGHT ((uint32_t)32)
 

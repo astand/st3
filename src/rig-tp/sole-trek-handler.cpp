@@ -1,7 +1,7 @@
 #include "sole-trek-handler.h"
 #include "mainconfig.h"
 #include "threads/thread-gps.h"
-#include "nmeautil/navinote.hpp"
+#include "nmeautil/navinote.h"
 
 static ITrekList* const trList = FileLink();
 

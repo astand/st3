@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "echo-handler.h"
-#include "nmeautil/navinote.hpp"
+#include "nmeautil/navinote.h"
 #include "trekrep/cached-trek.h"
 
 extern CachedTrek cachedTrek;

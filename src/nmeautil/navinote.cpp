@@ -1,4 +1,4 @@
-#include "navinote.hpp"
+#include "navinote.h"
 #include <stdlib.h>
 
 /* ------------------------------------------------------------------------- */
