@@ -42,7 +42,7 @@ typedef struct
 ** current Lenght = 24. Spare will use for ADC1 input soon
 ** next will deploy two more fields for other ADC2-ADC3 inputs
 ** ------------------------------------------------------------------------- */
-__packed class NaviNote : public IFlashStorable {
+__packed class NaviNote {
  public:
   clnd0 clnd;
   int16_t altitude;
@@ -52,18 +52,24 @@ __packed class NaviNote : public IFlashStorable {
   uint16_t spd;
   uint32_t accum_dist;
   uint16_t adcs[3];
-
- public:
-  NaviNote() { };
-  virtual const uint8_t* DataPointer() {
-    return (uint8_t*)(this);
-  }
-  virtual uint32_t DataLenght() {
-    return sizeof(NaviNote);
-  }
 };
 
-const int32_t kNaviNoteLength = sizeof(NaviNote);
+const uint32_t kNaviNoteLength = sizeof(NaviNote);
+
+class NaviWriter : public IFlashStorable {
+ public:
+  NaviWriter(NaviNote* note) : Note(note) {}
+ public:
+  virtual const uint8_t* DataPointer() {
+    return (uint8_t*)(Note);
+  }
+  virtual uint32_t DataLenght() {
+    return kNaviNoteLength;
+  }
+
+ private:
+  NaviNote* const Note;
+};
 
 typedef struct
 {

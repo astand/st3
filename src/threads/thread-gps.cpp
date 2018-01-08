@@ -33,7 +33,8 @@ GpsPositionData_t gpsdata =
 };
 // NaviNote trekNote;
 NavKeeper nkeeper(&scoor);
-IFlashStorable& storechunk = (IFlashStorable&)scoor;
+NaviWriter nwriter(&scoor);
+IFlashStorable& storechunk = (IFlashStorable&)nwriter;
 ISwitchable& gps_en = SwitchMaker::GetGpsEn();
 CachedTrek cachedTrek;
 char gpssens[80];
