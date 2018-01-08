@@ -1,19 +1,17 @@
-#include "navinote.h"
+#include "navkeeper.h"
 #include <stdlib.h>
 
-/* ------------------------------------------------------------------------- */
-Navi::Navi()
+NavKeeper::NavKeeper(NaviNote* noteref) : note_(noteref)
 {
-  rmcvalid = false;
 }
 
 
-void Navi::InitFromRestored()
+void NavKeeper::InitFromRestored()
 {
-  intermediate_dist = accum_dist / 1000.0;
+  intermediate_dist = note_->accum_dist / 1000.0;
 }
 
-void Navi::HandleGpsData(GpsPositionData_t* data)
+void NavKeeper::HandleGpsData(GpsPositionData_t* data)
 {
   if (data->update != kNoUpdate)
   {
@@ -21,7 +19,7 @@ void Navi::HandleGpsData(GpsPositionData_t* data)
     {
       if (mvdetector.HandleSpeed(data->pos->spd))
         // spd in 1 kmh / 3600 = distance in meters
-        intermediate_dist += (((double)spd / 100.0) / 3600.0);
+        intermediate_dist += (((double)(note_->spd) / 100.0) / 3600.0);
 
       liveKurs = data->sup.kurs;
     }
@@ -29,16 +27,16 @@ void Navi::HandleGpsData(GpsPositionData_t* data)
 }
 
 /* ------------------------------------------------------------------------- */
-void Navi::FreezeFixSpd()
+void NavKeeper::FreezeFixSpd()
 {
-  fixspd = spd;
+  fixspd = note_->spd;
 }
 
 /* ------------------------------------------------------------------------- */
-void Navi::FreezeDistance()
+void NavKeeper::FreezeDistance()
 {
   /// distance for saving to memory LSB 1m
-  accum_dist = (uint32_t)(intermediate_dist * 1000);
+  note_->accum_dist = (uint32_t)(intermediate_dist * 1000);
 }
 
 /* ------------------------------------------------------------------------- *
@@ -51,17 +49,17 @@ void Navi::FreezeDistance()
  * if last fixspd value different from current value more than FIX_SPD_VAL
  * return @fto => invoke instantaneous fixing
  * ------------------------------------------------------------------------- */
-uint32_t Navi::MathTo(uint32_t fto)
+uint32_t NavKeeper::MathTo(uint32_t fto)
 {
   uint32_t among = 0;
   /* check speed difference if big return max time and execute fixing */
-  among = (spd > fixspd) ? (spd - fixspd) : (fixspd - spd);
+  among = (note_->spd > fixspd) ? (note_->spd - fixspd) : (fixspd - note_->spd);
 
   if (among > FIX_SPD_VAL)
     return fto;
 
   /* return time (s) = (fto - to) */
-  if (spd < 200)
+  if (note_->spd < 200)
   {
     /* low speed start */
     if (fixspd > 200)
@@ -71,14 +69,14 @@ uint32_t Navi::MathTo(uint32_t fto)
     return 0;
   }
 
-  uint32_t newspd = (spd / 100);
+  uint32_t newspd = (note_->spd / 100);
   /* calc fix period with according to actual speed */
   among = ((newspd * newspd) >> 3) - (newspd * 5) + 140;
   among = among * 3600 / newspd;
   return (fto >= among) ? ((fto - among)) : (0);
 }
 
-int32_t Navi::CoerseChanged()
+int32_t NavKeeper::CoerseChanged()
 {
   int32_t diff_kurs = labs(fixkurs - liveKurs);
 
@@ -89,20 +87,4 @@ int32_t Navi::CoerseChanged()
   }
 
   return 0;
-}
-
-/* ------------------------------------------------------------------------- */
-void Navi::Copy(Navi* cp)
-{
-  this->clnd.year = cp->clnd.year;
-  this->clnd.month = cp->clnd.month;
-  this->clnd.day = cp->clnd.day;
-  this->clnd.hr = cp->clnd.hr;
-  this->clnd.min = cp->clnd.min;
-  this->clnd.sec = cp->clnd.sec;
-  this->altitude = cp->altitude;
-  this->accum_dist = cp->accum_dist;
-  this->spd = cp->spd;
-  this->lafull = cp->lafull;
-  this->lofull = cp->lofull;
 }

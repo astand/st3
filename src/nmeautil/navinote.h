@@ -42,7 +42,7 @@ typedef struct
 ** current Lenght = 24. Spare will use for ADC1 input soon
 ** next will deploy two more fields for other ADC2-ADC3 inputs
 ** ------------------------------------------------------------------------- */
-__packed class NaviNote {
+__packed class NaviNote : public IFlashStorable {
  public:
   clnd0 clnd;
   int16_t altitude;
@@ -55,13 +55,15 @@ __packed class NaviNote {
 
  public:
   NaviNote() { };
-  uint8_t* Base() {
+  virtual const uint8_t* DataPointer() {
     return (uint8_t*)(this);
   }
-  static uint16_t Lenght() {
+  virtual uint32_t DataLenght() {
     return sizeof(NaviNote);
   }
 };
+
+const int32_t kNaviNoteLength = sizeof(NaviNote);
 
 typedef struct
 {
@@ -71,38 +73,3 @@ typedef struct
   GpsUpdateError_t error;
   PositionerState_t sensor;
 } GpsPositionData_t;
-/* ------------------------------------------------------------------------- *
-**  Navi including methods and base constants for handle
-**  incoming GPS information and interpretate it for NaviNote view
-** ------------------------------------------------------------------------- */
-class Navi : public NaviNote, public  IFlashStorable {
-
- public:
-  virtual const uint8_t* DataPointer() {
-    return Base();
-  }
-  virtual uint32_t DataLenght() {
-    return Lenght();
-  }
-
- public:
-  void HandleGpsData(GpsPositionData_t* data);
-  SpeedSnaper mvdetector;
-  static const uint16_t FIX_SPD_VAL = (30 * 100);
-
-  bool rmcvalid;
-  uint16_t fixspd;
-  uint16_t fixkurs;
-  uint16_t liveKurs;
-  double intermediate_dist;
-
-  Navi();
-
-  void Copy(Navi* patient);
-  void InitFromRestored();
-
-  uint32_t MathTo(uint32_t firstto);
-  int32_t CoerseChanged();
-  void FreezeFixSpd();
-  void FreezeDistance();
-};

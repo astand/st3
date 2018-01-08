@@ -813,11 +813,6 @@
               <FilePath>.\src\nmeautil\clnd.cpp</FilePath>
             </File>
             <File>
-              <FileName>navinote.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\src\nmeautil\navinote.cpp</FilePath>
-            </File>
-            <File>
               <FileName>nmeautil.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\src\nmeautil\nmeautil.cpp</FilePath>
@@ -831,6 +826,11 @@
               <FileName>gps-positioner.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\src\nmeautil\gps-positioner.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>navkeeper.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\nmeautil\navkeeper.cpp</FilePath>
             </File>
           </Files>
         </Group>

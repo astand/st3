@@ -88,8 +88,7 @@ void GpsPositioner::UnpackRMC()
   posdat_->pos->clnd.min = str0::Atoi(chunk + 2, 2);
   posdat_->pos->clnd.sec = str0::Atoi(chunk + 4, 2);
 
-  if (str0::LenToSym(str0::ToSym(nmst, P_RMC_LAT)) == 8 &&
-      (str0::LenToSym(str0::ToSym(nmst, P_RMC_TIME)) == 10))
+  if (str0::LenToSym(str0::ToSym(nmst, P_RMC_LAT)) == 9)
   {
     posdat_->pos->lafull = SetL(str0::ToSym(nmst, P_RMC_LAT), 2);
 

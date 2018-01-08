@@ -3,6 +3,7 @@
 #include "configs/dbgconf.h"
 #include "thread-gps.h"
 #include "nmeautil/nmeautil.hpp"
+#include "nmeautil/navkeeper.h"
 #include "trekrep/trek-location-descriptor.h"
 #include "trekrep/cached-trek.h"
 #include "equip/flash/mx-25-driver.h"
@@ -21,7 +22,7 @@ using namespace Timers;
 using namespace MAGIC;
 static const int32_t CACHE_STOP_TIMEOUT = 10 * 1000;
 
-Navi scoor;
+NaviNote scoor;
 GpsPositionData_t gpsdata =
 {
   &scoor,
@@ -31,6 +32,7 @@ GpsPositionData_t gpsdata =
   kNoSensor
 };
 // NaviNote trekNote;
+NavKeeper nkeeper(&scoor);
 IFlashStorable& storechunk = (IFlashStorable&)scoor;
 ISwitchable& gps_en = SwitchMaker::GetGpsEn();
 CachedTrek cachedTrek;
@@ -71,15 +73,14 @@ TrekList treklist(fiend);
 static GpsPositioner& gpspos = PipesMaker::GetGpsPositioner();
 
 /* ------------------------------------------------------------------------- */
-void ANaviPrint(char* bfu, const  Navi& inst)
+void ANaviPrint(char* bfu, const  NaviNote& inst)
 {
   sprintf (bfu, "{ lat:%d.%06d,lon:%d.%06d,", inst.lafull / 1000000,
            inst.lafull % 1000000, inst.lofull / 1000000, inst.lofull % 1000000);
   sprintf(bfu + strlen(bfu),
-          "titl:\"%04d-%02d-%02dT%02d:%02d:%02d\",spd:%d, dist:%d, kurs:%d },",
+          "titl:\"%04d-%02d-%02dT%02d:%02d:%02d\",spd:%d, dist:%d},",
           inst.clnd.year + 2000, inst.clnd.month, inst.clnd.day, inst.clnd.hr,
-          inst.clnd.min, inst.clnd.sec, inst.spd / 100, inst.accum_dist,
-          inst.liveKurs / 100);
+          inst.clnd.min, inst.clnd.sec, inst.spd / 100, inst.accum_dist);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -117,7 +118,7 @@ void TrackProcess()
       break;
 
     case (kWaitMove):
-      if (scoor.mvdetector.IsMovement())
+      if (nkeeper.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]move is detected --> goto MOVE\n");
         treksaver.StartNewNote();
@@ -132,10 +133,10 @@ void TrackProcess()
       break;
 
     case (kMoving):
-      if (scoor.CoerseChanged() || dbgTim.Ticks() <= scoor.MathTo(DEDUG_TO))
+      if (nkeeper.CoerseChanged() || dbgTim.Ticks() <= nkeeper.MathTo(DEDUG_TO))
       {
-        scoor.FreezeFixSpd();
-        scoor.FreezeDistance();
+        nkeeper.FreezeFixSpd();
+        nkeeper.FreezeDistance();
         dbgTim.Start(DEDUG_TO);
         ANaviPrint(dbgbuf, scoor);
         DBG_2Gps("%s\n", dbgbuf);
@@ -144,7 +145,7 @@ void TrackProcess()
         cachedTrek.Add(scoor);
       }
 
-      if (!scoor.mvdetector.IsMovement())
+      if (!nkeeper.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]suspend moving --> goto movesuspend\n");
         waitmovTim.Start(15 * 60 * 1000);
@@ -155,7 +156,7 @@ void TrackProcess()
       break;
 
     case (kMovePaused):
-      if (scoor.mvdetector.IsMovement())
+      if (nkeeper.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]move is restored --> goto MOVE\n");
         trackinst.st0 = kMoving;
@@ -220,10 +221,10 @@ void JConfSave(uint8_t* mem, uint32_t len)
  * MEMory read to static @spbuf from aligned address (64)
  * and return res through Navi pointer
  */
-Navi* MEM_OutNavi(uint32_t addr)
+NaviNote* MEM_OutNavi(uint32_t addr)
 {
-  fiend.Read((addr + 4), spbuf, NaviNote::Lenght());
-  return ((Navi*)(spbuf));
+  fiend.Read((addr + 4), spbuf, kNaviNoteLength);
+  return ((NaviNote*)(spbuf));
 }
 
 /* ------------------------------------------------------------------------- *
@@ -258,7 +259,7 @@ void tskGps(void*)
   treksaver.Init();
   treklist.RefreshTrekList();
   treklist.ReadLastNote(storechunk);
-  scoor.InitFromRestored();
+  nkeeper.InitFromRestored();
   // FileListNotification();
   // DBG_Common("end %d\n", track_saver.address);
 
@@ -292,7 +293,7 @@ void tskGps(void*)
 
     if (gpsdata.update != kNoUpdate)
     {
-      scoor.HandleGpsData(&gpsdata);
+      nkeeper.HandleGpsData(&gpsdata);
 
       if (trackinst.st0 == kNoNavData)
       {
