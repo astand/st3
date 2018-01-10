@@ -802,6 +802,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\ccode\oldcommon\McuFlash\SaverModel\SectorWriter.cpp</FilePath>
             </File>
+            <File>
+              <FileName>firm-writer.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\src\mcu-flash\firm-writer.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
