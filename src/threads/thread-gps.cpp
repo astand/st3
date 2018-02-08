@@ -1,13 +1,9 @@
-/* ------------------------------------------------------------------------- *
- rmc, 2C434D52
- VTG, 2C475456
- GGA, 2c414747
- GLL, 2C4C4C47
- * ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 #include <string.h>
 #include "configs/dbgconf.h"
 #include "thread-gps.h"
 #include "nmeautil/nmeautil.hpp"
+#include "nmeautil/navkeeper.h"
 #include "trekrep/trek-location-descriptor.h"
 #include "trekrep/cached-trek.h"
 #include "equip/flash/mx-25-driver.h"
@@ -24,12 +20,21 @@
 
 using namespace Timers;
 using namespace MAGIC;
-
 static const int32_t CACHE_STOP_TIMEOUT = 10 * 1000;
 
-Navi scoor;
-NaviNote trekNote;
-IFlashStorable& storechunk = (IFlashStorable&)scoor;
+NaviNote scoor;
+GpsPositionData_t gpsdata =
+{
+  &scoor,
+  { 0 },
+  kNoUpdate,
+  kNoError,
+  kNoSensor
+};
+// NaviNote trekNote;
+NavKeeper nkeeper(&scoor);
+NaviWriter nwriter(&scoor);
+IFlashStorable& storechunk = (IFlashStorable&)nwriter;
 ISwitchable& gps_en = SwitchMaker::GetGpsEn();
 CachedTrek cachedTrek;
 char gpssens[80];
@@ -45,13 +50,12 @@ static char dbgbuf[256];
 
 typedef enum
 {
-  eNotvalid = 0,
-  eWaitmove = 1,
-  eMove = 2,
-  eMovesuspend = 3,
-  eTestWriting = 4,
-  eNoGpsSensor = 5
-
+  kNotFixed = 0,
+  kWaitMove = 1,
+  kMoving = 2,
+  kMovePaused = 3,
+  kTestWriting = 4,
+  kNoNavData = 5
 } TrackState_e;
 
 struct
@@ -60,50 +64,30 @@ struct
   uint8_t Get() {
     return (uint8_t)st0;
   }
-} trackinst = {eNotvalid};
+} trackinst = {kNotFixed};
 
 
 IFlashMemory& fiend = PipesMaker::GetFlashMemory();
 TrekSaver treksaver(fiend);
 TrekList treklist(fiend);
 
-static IStreamable& agg = PipesMaker::GetGpsStream();
-
+static GpsPositioner& gpspos = PipesMaker::GetGpsPositioner();
 
 /* ------------------------------------------------------------------------- */
-void ANaviPrint(char* bfu, const  Navi& inst)
+void ANaviPrint(char* bfu, const  NaviNote& inst)
 {
   sprintf (bfu, "{ lat:%d.%06d,lon:%d.%06d,", inst.lafull / 1000000,
            inst.lafull % 1000000, inst.lofull / 1000000, inst.lofull % 1000000);
   sprintf(bfu + strlen(bfu),
-          "titl:\"%04d-%02d-%02dT%02d:%02d:%02d\",spd:%d, dist:%d, kurs:%d },",
+          "titl:\"%04d-%02d-%02dT%02d:%02d:%02d\",spd:%d, dist:%d},",
           inst.clnd.year + 2000, inst.clnd.month, inst.clnd.day, inst.clnd.hr,
-          inst.clnd.min, inst.clnd.sec, inst.spd / 100, inst.accum_dist,
-          inst.liveKurs / 100);
+          inst.clnd.min, inst.clnd.sec, inst.spd / 100, inst.accum_dist);
 }
 
 /* ------------------------------------------------------------------------- */
 bool IsNewTrack(uint8_t const* buf)
 {
   return (*track_num == 0);
-}
-
-/* ------------------------------------------------------------------------- */
-uint8_t ConvAtoICsm(uint8_t* msg)
-{
-  uint8_t cchsum = 0;
-
-  if (msg[0] < 0x3A)
-    cchsum = (msg[0] - 0x30) * 16;
-  else
-    cchsum = (msg[0] - 'A' + 10) * 16;
-
-  if ((msg[1]) < 0x3A)
-    cchsum += (msg[1]) - 0x30;
-  else
-    cchsum += (msg[1]) - 0x41 + 10;
-
-  return cchsum;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -118,37 +102,6 @@ void DummyWait(uint32_t ii)
   }
 }
 
-
-/* ------------------------------------------------------------------------- */
-int32_t NMEA_Check(uint8_t* obuf)
-{
-  static uint16_t bytec = 0;
-  int32_t sym;
-  sym = agg.Read();
-
-  if (sym < 0)
-    return 0;
-
-  if (sym == '$')
-    bytec = 0;
-  else if (sym == 0x0D)
-  {
-    /* stop msg */
-    uint8_t csm = cppCrc16::MathCsm(obuf, bytec - 3);
-    uint8_t real = ConvAtoICsm(&obuf[bytec - 2]);
-
-    if (csm == real)
-      return (bytec - 3);
-    else
-      return -1;
-  }
-  else
-    obuf[bytec++] = static_cast<uint8_t>(sym);
-
-  return 0;
-}
-
-
 /* ------------------------------------------------------------------------- *
  *
  * ------------------------------------------------------------------------- */
@@ -156,30 +109,35 @@ void TrackProcess()
 {
   switch (trackinst.st0)
   {
-    case (eNotvalid):
-      if (scoor.Valid())
+    case (kNotFixed):
+      if (gpsdata.sensor == kValidPostion)
       {
         DBG_2Gps("[GPS2]Valid RMC detect --> goto waitmove\n");
-        trackinst.st0 = eWaitmove;
+        trackinst.st0 = kWaitMove;
       }
 
       break;
 
-    case (eWaitmove):
-      if (scoor.mvdetector.IsMovement())
+    case (kWaitMove):
+      if (nkeeper.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]move is detected --> goto MOVE\n");
         treksaver.StartNewNote();
-        trackinst.st0 = eMove;
+        trackinst.st0 = kMoving;
+      }
+
+      if (gpsdata.sensor == kNotValidPosition)
+      {
+        trackinst.st0 = kNotFixed;
       }
 
       break;
 
-    case (eMove):
-      if (scoor.CoerseChanged() || dbgTim.Ticks() <= scoor.MathTo(DEDUG_TO))
+    case (kMoving):
+      if (nkeeper.CoerseChanged() || dbgTim.Ticks() <= nkeeper.MathTo(DEDUG_TO))
       {
-        scoor.FreezeFixSpd();
-        scoor.FreezeDistance();
+        nkeeper.FreezeFixSpd();
+        nkeeper.FreezeDistance();
         dbgTim.Start(DEDUG_TO);
         ANaviPrint(dbgbuf, scoor);
         DBG_2Gps("%s\n", dbgbuf);
@@ -188,33 +146,33 @@ void TrackProcess()
         cachedTrek.Add(scoor);
       }
 
-      if (!scoor.mvdetector.IsMovement())
+      if (!nkeeper.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]suspend moving --> goto movesuspend\n");
         waitmovTim.Start(15 * 60 * 1000);
-        trackinst.st0 = eMovesuspend;
+        trackinst.st0 = kMovePaused;
         dbgTim.Start(10000);
       }
 
       break;
 
-    case (eMovesuspend):
-      if (scoor.mvdetector.IsMovement())
+    case (kMovePaused):
+      if (nkeeper.mvdetector.IsMovement())
       {
         DBG_2Gps("[GPS2]move is restored --> goto MOVE\n");
-        trackinst.st0 = eMove;
+        trackinst.st0 = kMoving;
       }
 
       if (waitmovTim.Elapsed())
       {
         /* new ID */
         DBG_2Gps("[GPS2]time is run out --> Start full\n");
-        trackinst.st0 = eNotvalid;
+        trackinst.st0 = kNotFixed;
       }
 
       break;
 
-    case (eTestWriting):
+    case (kTestWriting):
       if (dbgTim.Elapsed())
       {
         scoor.spd = (scoor.spd + 1) & 0x7f;
@@ -225,6 +183,14 @@ void TrackProcess()
         treksaver.SaveNote(storechunk);
         ANaviPrint(dbgbuf, scoor);
         DBG_2Gps(dbgbuf);
+      }
+
+      break;
+
+    case (kNoNavData):
+      if (gpsdata.sensor != kNoSensor)
+      {
+        trackinst.st0 = kNotFixed;
       }
 
       break;
@@ -256,47 +222,17 @@ void JConfSave(uint8_t* mem, uint32_t len)
  * MEMory read to static @spbuf from aligned address (64)
  * and return res through Navi pointer
  */
-Navi* MEM_OutNavi(uint32_t addr)
+NaviNote* MEM_OutNavi(uint32_t addr)
 {
-  fiend.Read((addr + 4), spbuf, NaviNote::Lenght());
-  return ((Navi*)(spbuf));
+  fiend.Read((addr + 4), spbuf, kNaviNoteLength);
+  return ((NaviNote*)(spbuf));
 }
-
-
-/* ------------------------------------------------------------------------- */
-void NMEA_Parse(int32_t len)
-{
-  gpssens[len] = 0;
-  volatile uint32_t* pmark = (uint32_t*)((uint8_t*)(gpssens + 2));
-
-  if (*pmark == Navi::RMC_PREFIX)
-  {
-    scoor.RMCParse(gpssens);
-    DBG_Gps("%s\n", gpssens);
-  }
-  else if (*pmark == Navi::VTG_PREFIX)
-  {
-    scoor.VTGParse(gpssens);
-    DBG_Gps("%s\n", gpssens);
-  }
-  else if (*pmark == Navi::GGA_PREFIX)
-  {
-    scoor.GGAParse(gpssens);
-    // DBG_Gps("%s\n", gpssens);
-  }
-  else
-  {
-    // DBG_Gps("%s\n", gpssens);
-  }
-}
-
 
 /* ------------------------------------------------------------------------- *
  *   Tasks implementation
  * ------------------------------------------------------------------------- */
 void tskGps(void*)
 {
-  int32_t ret;
   // uint32_t addr;
   // track_saver.Init();
   // gps_en.on();
@@ -324,7 +260,7 @@ void tskGps(void*)
   treksaver.Init();
   treklist.RefreshTrekList();
   treklist.ReadLastNote(storechunk);
-  scoor.InitFromRestored();
+  nkeeper.InitFromRestored();
   // FileListNotification();
   // DBG_Common("end %d\n", track_saver.address);
 
@@ -341,23 +277,30 @@ void tskGps(void*)
       scoor.clnd.hr += 1;
     }
 
-    trackinst.st0 = eTestWriting;
+    trackinst.st0 = kTestWriting;
   }
 
   cachedTrek.Add(scoor);
-  trackinst.st0 = eNoGpsSensor;
+  trackinst.st0 = kNoNavData;
   osDelay(1000);
 
   while (1)
   {
     // if (GetTim(agps_to) == 0)
-    if (cacheStopTim.Elapsed() && trackinst.st0 != eMove)
+    if (cacheStopTim.Elapsed() && trackinst.st0 != kMovePaused)
       cachedTrek.Add(scoor);
 
-    if ((ret = NMEA_Check((uint8_t*)gpssens)) > 0)
+    gpspos.UpdatePosition(&gpsdata);
+
+    if (gpsdata.update != kNoUpdate)
     {
-      NMEA_Parse(ret);
-      trackinst.st0 = eNotvalid;
+      nkeeper.HandleGpsData(&gpsdata);
+
+      if (trackinst.st0 == kNoNavData)
+      {
+        // change NoSensor status only one time
+        trackinst.st0 = kNotFixed;
+      }
     }
 
     /* ??? need new timing base algoritm */
@@ -389,7 +332,6 @@ uint8_t GetIntegerGPSState()
 /* ---------------------------------------------------------------------------- */
 int32_t PrintYandexLink(char* inb)
 {
-//  if (scoor.Valid())
   if (true)
   {
     sprintf(inb,

@@ -2,8 +2,8 @@
 
 #define MAJOR_VERSION   (10)
 
-#define MINOR_VERSION   (12)
-#define PATCH_VERSION   (7)
+#define MINOR_VERSION   (13)
+#define PATCH_VERSION   (6)
 
 /* using MAJOR.MINOR.PATCH version system */
 #define ISSUE_VERSION   (\

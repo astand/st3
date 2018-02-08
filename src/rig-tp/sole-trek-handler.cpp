@@ -1,7 +1,7 @@
 #include "sole-trek-handler.h"
 #include "mainconfig.h"
 #include "threads/thread-gps.h"
-#include "nmeautil/navinote.hpp"
+#include "nmeautil/navinote.h"
 
 static ITrekList* const trList = FileLink();
 
@@ -33,5 +33,5 @@ int32_t SoleTrekHandler::UserIncomeHead(const RigFrame* in, int32_t dataSize)
 
 int32_t SoleTrekHandler::UserProcess(int32_t need_block)
 {
-  return trList->UploadTrek(reqId, (need_block - 1) * 25, (25 * NaviNote::Lenght()), rigFrame->Data);
+  return trList->UploadTrek(reqId, (need_block - 1) * 25, (25 * kNaviNoteLength), rigFrame->Data);
 }

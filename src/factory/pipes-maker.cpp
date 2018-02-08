@@ -14,14 +14,14 @@ IFlashMemory& PipesMaker::GetFlashMemory()
   return mxdrv;
 }
 
-
-IStreamable& PipesMaker::GetGpsStream()
-{
-  return GetGpsPipe();
-}
-
 IStreamable& PipesMaker::GetGsmStream()
 {
   return GetGsmPipe();
 }
 
+GpsPositioner& PipesMaker::GetGpsPositioner()
+{
+  static NmeaStringReader __reader(GetGpsPipe());
+  static GpsPositioner __pos(__reader);
+  return __pos;
+}

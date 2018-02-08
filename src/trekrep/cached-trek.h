@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "nmeautil/navinote.hpp"
+#include "nmeautil/navinote.h"
 
 class CachedTrek {
  public:

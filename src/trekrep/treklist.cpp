@@ -33,7 +33,7 @@ int32_t TrekList::UploadTrek(uint16_t req_id, int32_t tn_offset,
 {
   uint32_t currentaddr, notesize;
   int32_t startoffset = tn_offset;
-  notesize = NaviNote::Lenght();
+  notesize = kNaviNoteLength;
   uint32_t tn_count = maxsize / notesize;
 
   if (!trek_dsc[req_id].IsValid())
@@ -48,13 +48,13 @@ int32_t TrekList::UploadTrek(uint16_t req_id, int32_t tn_offset,
     tn_offset++;
   }
 
-  return (tn_offset - startoffset) * NaviNote::Lenght();
+  return (tn_offset - startoffset) * kNaviNoteLength;
 }
 
 int32_t TrekList::GetTrekSize(uint16_t req_id)
 {
   if (req_id < M_PAGES_COUNT && trek_dsc[req_id].IsValid())
-    return trek_dsc[req_id].CodeOffset() * Navi::Lenght();
+    return trek_dsc[req_id].CodeOffset() * kNaviNoteLength;
 
   return 0;
 }
@@ -81,15 +81,15 @@ int32_t TrekList::UploadOneTrekInfo(TrekLocationDescriptor& trek, uint8_t* buf)
   Matrix_item* item = (Matrix_item*)buf;
   uint16_t cur_id;
   uint32_t startdist, enddist;
-  uint32_t payloadsize = trek.CodeOffset() * NaviNote::Lenght();
+  uint32_t payloadsize = trek.CodeOffset() * kNaviNoteLength;
   ReadDataContent(trek.AddressStart(), 2);
   cur_id = *(uint16_t*)readbuf;
   /* get start time and first dist point */
-  ReadDataContent(trek.AddressStart() + 4, NaviNote::Lenght());
+  ReadDataContent(trek.AddressStart() + 4, kNaviNoteLength);
   item->StartDate((NaviNote*)readbuf);
   startdist = ((NaviNote*)readbuf)->accum_dist;
   /* get end time and last dist point */
-  ReadDataContent(trek.AddressEnd() + 4, NaviNote::Lenght());
+  ReadDataContent(trek.AddressEnd() + 4, kNaviNoteLength);
   item->EndDate((NaviNote*)readbuf);
   enddist = ((NaviNote*)readbuf)->accum_dist;
   item->setParam(cur_id, payloadsize,	(enddist - startdist), enddist);
@@ -101,8 +101,8 @@ void TrekList::ReadLastNote(uint8_t* buf)
   if (!LastNoteValid())
     return;
 
-  ReadDataContent(trek_dsc[0].AddressEnd() + 4, NaviNote::Lenght());
-  memcpy(buf, readbuf, NaviNote::Lenght());
+  ReadDataContent(trek_dsc[0].AddressEnd() + 4, kNaviNoteLength);
+  memcpy(buf, readbuf, kNaviNoteLength);
 }
 
 void TrekList::ReadLastNote(IFlashStorable& read_obj)
