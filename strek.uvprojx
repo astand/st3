@@ -880,12 +880,7 @@
             <File>
               <FileName>mx-25-driver.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\..\ccode\equip\flash\mx-25-driver.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>gsmprot.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\ccode\equip\gsm\gsmprot.cpp</FilePath>
+              <FilePath>.\src\equip\flash\mx-25-driver.cpp</FilePath>
             </File>
             <File>
               <FileName>modem.cpp</FileName>
@@ -895,27 +890,27 @@
             <File>
               <FileName>pdu.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\..\ccode\equip\gsm\pdu.cpp</FilePath>
+              <FilePath>.\src\equip\gsm\pdu.cpp</FilePath>
             </File>
             <File>
               <FileName>m66-fail-detector.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\..\ccode\equip\gsm\modems\m66-fail-detector.cpp</FilePath>
+              <FilePath>.\src\equip\gsm\modems\m66-fail-detector.cpp</FilePath>
             </File>
             <File>
               <FileName>at-framer.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\..\ccode\equip\gsm\at-framer.cpp</FilePath>
+              <FilePath>.\src\equip\gsm\at-framer.cpp</FilePath>
             </File>
             <File>
               <FileName>at-pipe.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\..\ccode\equip\gsm\at-pipe.cpp</FilePath>
+              <FilePath>.\src\equip\gsm\at-pipe.cpp</FilePath>
             </File>
             <File>
               <FileName>bin-pipe.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\..\ccode\equip\pipes\bin-pipe.cpp</FilePath>
+              <FilePath>.\src\equip\gsm\bin-pipe.cpp</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,6 +1,6 @@
 #include "bin-maker.h"
 #include "hdwr/pipes/hw-gsm-serial.h"
-#include "equip/pipes/bin-pipe.h"
+#include "equip/gsm/bin-pipe.h"
 
 
 IStreamable& GetBinPipe()
